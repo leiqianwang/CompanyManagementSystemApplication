@@ -44,9 +44,10 @@ export function delEmbeddingModel(id) {
 }
 
 // 测试嵌入模型连接
-export function testEmbeddingModel(id) {
+export function testEmbeddingModel(id, data) {
   return request({
     url: '/ai/embeddingModel/test/' + id,
-    method: 'post'
+    method: 'post',
+    data: data
   })
 }

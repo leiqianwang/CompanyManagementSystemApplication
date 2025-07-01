@@ -1,33 +1,46 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="88px">
-      <el-form-item label="模型名称" prop="name">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="资源名称" prop="resourceName">
         <el-input
-          v-model="queryParams.name"
-          placeholder="请输入模型名称"
+          v-model="queryParams.resourceName"
+          placeholder="请输入资源名称"
           clearable
-          style="width: 240px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="模型类型" prop="modelType">
-        <el-select v-model="queryParams.modelType" placeholder="请选择模型类型" clearable>
-          <el-option
-            v-for="dict in dict.type.embedding_model_type"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
+      <el-form-item label="资源类型" prop="resourceType">
+        <el-input
+          v-model="queryParams.resourceType"
+          placeholder="请输入资源类型"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="API地址" prop="apiUrl">
+        <el-input
+          v-model="queryParams.apiUrl"
+          placeholder="请输入API地址"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="是否启用" prop="active">
+        <el-select v-model="queryParams.active" placeholder="是否启用" clearable>
+          <el-option label="正常" value="0" />
+          <el-option label="停用" value="1" />
         </el-select>
       </el-form-item>
-      <el-form-item label="版本" prop="version">
-        <el-input
-          v-model="queryParams.version"
-          placeholder="请输入版本"
-          clearable
-          style="width: 150px"
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="创建时间">
+        <el-date-picker
+          v-model="dateRange"
+          style="width: 240px"
+          value-format="yyyy-MM-dd"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+        ></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -43,7 +56,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['ai:embedding:add']"
+          v-hasPermi="['ai:embeddingModel:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -54,7 +67,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['ai:embedding:edit']"
+          v-hasPermi="['ai:embeddingModel:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -65,7 +78,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['ai:embedding:remove']"
+          v-hasPermi="['ai:embeddingModel:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -75,7 +88,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['ai:embedding:export']"
+          v-hasPermi="['ai:embeddingModel:export']"
         >导出</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -84,28 +97,53 @@
           plain
           icon="el-icon-cpu"
           size="mini"
+          :disabled="single"
           @click="handleTest"
-          v-hasPermi="['ai:embedding:test']"
-        >测试向量化</el-button>
+          v-hasPermi="['ai:embeddingModel:test']"
+        >测试连接</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="embeddingList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="embeddingModelList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="id" width="80" />
-      <el-table-column label="模型名称" align="center" prop="name" :show-overflow-tooltip="true" />
-      <el-table-column label="模型类型" align="center" prop="modelType" width="120">
+      <el-table-column label="序号" align="center" prop="id" width="80" />
+      <el-table-column label="资源名称" align="center" prop="resourceName" width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="资源类型" align="center" prop="resourceType" width="140" />
+      <el-table-column label="API地址" align="center" prop="apiUrl" width="220" :show-overflow-tooltip="true" />
+      <el-table-column label="API密钥" align="center" prop="apiKey" width="130">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.embedding_model_type" :value="scope.row.modelType"/>
+          <span v-if="scope.row.apiKey">{{ scope.row.apiKey.substring(0, 8) }}****</span>
+          <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="版本" align="center" prop="version" width="100" />
-      <el-table-column label="组合键" align="center" width="200">
+      <el-table-column label="秘密密钥" align="center" prop="secretKey" width="130">
         <template slot-scope="scope">
-          <el-tag type="info" size="mini">
-            {{scope.row.name}}-{{scope.row.modelType}}-{{scope.row.version}}
-          </el-tag>
+          <span v-if="scope.row.secretKey">{{ scope.row.secretKey.substring(0, 8) }}****</span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="向量维度" align="center" prop="dimension" width="110" />
+      <el-table-column label="频率限制" align="center" prop="frequencyLimit" width="130">
+        <template slot-scope="scope">
+          {{ scope.row.frequencyLimit }}次/分钟
+        </template>
+      </el-table-column>
+      <el-table-column label="是否启用" align="center" prop="active" width="110">
+        <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.active"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="0"
+            inactive-value="1"
+            @change="handleStatusChange(scope.row)"
+          ></el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="200">
@@ -115,21 +153,21 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['ai:embedding:edit']"
+            v-hasPermi="['ai:embeddingModel:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-cpu"
             @click="handleTest(scope.row)"
-            v-hasPermi="['ai:embedding:test']"
+            v-hasPermi="['ai:embeddingModel:test']"
           >测试</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['ai:embedding:remove']"
+            v-hasPermi="['ai:embeddingModel:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -148,39 +186,73 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
-            <el-form-item label="模型名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入模型名称" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="模型类型" prop="modelType">
-              <el-select v-model="form.modelType" placeholder="请选择模型类型" style="width: 100%">
-                <el-option
-                  v-for="dict in dict.type.embedding_model_type"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="版本" prop="version">
-              <el-input v-model="form.version" placeholder="请输入版本号" />
+            <el-form-item label="资源名称" prop="resourceName">
+              <el-input v-model="form.resourceName" placeholder="请输入资源名称" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-alert
-              title="唯一性约束"
-              type="info"
-              description="模型名称、模型类型、版本的组合必须唯一"
-              :closable="false"
-              show-icon>
-            </el-alert>
+            <el-form-item label="资源类型" prop="resourceType">
+              <el-input v-model="form.resourceType" placeholder="请输入资源类型" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="API密钥" prop="apiKey">
+              <el-input v-model="form.apiKey" type="password" placeholder="请输入API密钥" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="秘密密钥" prop="secretKey">
+              <el-input v-model="form.secretKey" type="password" placeholder="请输入秘密密钥（可选）" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="API地址" prop="apiUrl">
+              <el-input v-model="form.apiUrl" placeholder="请输入API地址" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="向量维度" prop="dimension">
+              <el-input-number v-model="form.dimension" :min="1" :max="10000" placeholder="向量维度" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="频率限制" prop="frequencyLimit">
+              <el-input-number v-model="form.frequencyLimit" :min="1" :max="1000" placeholder="次/分钟" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="是否启用" prop="active">
+              <el-radio-group v-model="form.active">
+                <el-radio label="0">正常</el-radio>
+                <el-radio label="1">停用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="操作说明" prop="operation">
+              <el-input v-model="form.operation" type="textarea" placeholder="请输入操作说明" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="备注" prop="remark">
+              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+            </el-form-item>
           </el-col>
         </el-row>
       </el-form>
@@ -235,20 +307,23 @@ export default {
       // 总条数
       total: 0,
       // 嵌入模型资源表格数据
-      embeddingList: [],
+      embeddingModelList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
       open: false,
       // 是否显示测试对话框
       testOpen: false,
+      // 日期范围
+      dateRange: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        name: null,
-        modelType: null,
-        version: null
+        resourceName: null,
+        resourceType: null,
+        apiUrl: null,
+        active: null
       },
       // 表单参数
       form: {},
@@ -256,14 +331,25 @@ export default {
       testForm: {},
       // 表单校验
       rules: {
-        name: [
-          { required: true, message: "模型名称不能为空", trigger: "blur" }
+        resourceName: [
+          { required: true, message: "资源名称不能为空", trigger: "blur" }
         ],
-        modelType: [
-          { required: true, message: "模型类型不能为空", trigger: "change" }
+        resourceType: [
+          { required: true, message: "资源类型不能为空", trigger: "blur" }
         ],
-        version: [
-          { required: true, message: "版本不能为空", trigger: "blur" }
+        apiKey: [
+          { required: true, message: "API密钥不能为空", trigger: "blur" }
+        ],
+        apiUrl: [
+          { required: true, message: "API地址不能为空", trigger: "blur" }
+        ],
+        dimension: [
+          { required: true, message: "向量维度不能为空", trigger: "blur" },
+          { type: 'number', min: 1, max: 10000, message: '向量维度必须在1-10000之间', trigger: 'blur' }
+        ],
+        frequencyLimit: [
+          { required: true, message: "频率限制不能为空", trigger: "blur" },
+          { type: 'number', min: 1, max: 1000, message: '频率限制必须在1-1000之间', trigger: 'blur' }
         ]
       }
     };
@@ -275,8 +361,8 @@ export default {
     /** 查询嵌入模型资源列表 */
     getList() {
       this.loading = true;
-      listEmbeddingModel(this.queryParams).then(response => {
-        this.embeddingList = response.rows;
+      listEmbeddingModel(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
+        this.embeddingModelList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -290,9 +376,16 @@ export default {
     reset() {
       this.form = {
         id: null,
-        name: null,
-        modelType: null,
-        version: null
+        resourceName: null,
+        resourceType: null,
+        apiKey: null,
+        secretKey: null,
+        apiUrl: null,
+        dimension: null,
+        frequencyLimit: null,
+        active: "0",
+        operation: null,
+        remark: null
       };
       this.resetForm("form");
     },
@@ -303,6 +396,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.dateRange = [];
       this.resetForm("queryForm");
       this.handleQuery();
     },
@@ -364,11 +458,22 @@ export default {
         ...this.queryParams
       }, `embeddingModel_${new Date().getTime()}.xlsx`)
     },
+    /** 状态修改 */
+    handleStatusChange(row) {
+      let text = row.active === "0" ? "启用" : "停用";
+      this.$modal.confirm('确认要"' + text + '""' + row.resourceName + '"吗？').then(function() {
+        return updateEmbeddingModel(row);
+      }).then(() => {
+        this.$modal.msgSuccess(text + "成功");
+      }).catch(function() {
+        row.active = row.active === "0" ? "1" : "0";
+      });
+    },
     /** 向量化测试 */
     handleTest(row) {
       this.testForm = {
         id: row ? row.id : this.ids[0],
-        modelInfo: row ? `${row.name}-${row.modelType}-${row.version}` : '',
+        modelInfo: row ? `${row.resourceName} (${row.resourceType})` : '',
         testText: '',
         vectorResult: '',
         dimension: ''
@@ -381,8 +486,7 @@ export default {
         this.$modal.msgWarning("请输入测试文本");
         return;
       }
-      testEmbeddingModel({
-        id: this.testForm.id,
+      testEmbeddingModel(this.testForm.id, {
         text: this.testForm.testText
       }).then(response => {
         this.testForm.vectorResult = JSON.stringify(response.data.vector, null, 2);
