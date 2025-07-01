@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询嵌入模型资源列表
 export function listEmbeddingModel(query) {
   return request({
-    url: '/system/embeddingModel/list',
+    url: '/ai/embeddingModel/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listEmbeddingModel(query) {
 // 查询嵌入模型资源详细
 export function getEmbeddingModel(id) {
   return request({
-    url: '/system/embeddingModel/' + id,
+    url: '/ai/embeddingModel/' + id,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getEmbeddingModel(id) {
 // 新增嵌入模型资源
 export function addEmbeddingModel(data) {
   return request({
-    url: '/system/embeddingModel',
+    url: '/ai/embeddingModel',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addEmbeddingModel(data) {
 // 修改嵌入模型资源
 export function updateEmbeddingModel(data) {
   return request({
-    url: '/system/embeddingModel',
+    url: '/ai/embeddingModel',
     method: 'put',
     data: data
   })
@@ -38,16 +38,15 @@ export function updateEmbeddingModel(data) {
 // 删除嵌入模型资源
 export function delEmbeddingModel(id) {
   return request({
-    url: '/system/embeddingModel/' + id,
+    url: '/ai/embeddingModel/' + id,
     method: 'delete'
   })
 }
 
-// 测试嵌入模型向量化
-export function testEmbeddingModel(data) {
+// 测试嵌入模型连接
+export function testEmbeddingModel(id) {
   return request({
-    url: '/system/embeddingModel/vectorize',
-    method: 'post',
-    data: data
+    url: '/ai/embeddingModel/test/' + id,
+    method: 'post'
   })
 }
