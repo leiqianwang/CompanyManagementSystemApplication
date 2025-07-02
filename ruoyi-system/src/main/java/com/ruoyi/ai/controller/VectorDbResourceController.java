@@ -28,7 +28,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2025-07-02
  */
 @RestController
-@RequestMapping("/ai/vectorDb")
+@RequestMapping("/ai/vector-database")
 public class VectorDbResourceController extends BaseController
 {
     @Autowired

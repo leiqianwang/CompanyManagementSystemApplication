@@ -33,27 +33,6 @@ CREATE TABLE `ai_model_resource` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='AI模型资源表';
 
 -- ================================================
--- 2. 创建向量数据库表 (预留)
--- ================================================
-DROP TABLE IF EXISTS `ai_vector_database`;
-CREATE TABLE `ai_vector_database` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `model_name` varchar(100) NOT NULL COMMENT '模型名称',
-  `model_type` varchar(50) NOT NULL COMMENT '模型类型',
-  `embedding` int(11) DEFAULT NULL COMMENT '向量维度',
-  `url` varchar(500) NOT NULL COMMENT '连接地址',
-  `db_name` varchar(100) DEFAULT NULL COMMENT '数据库名称',
-  `active` char(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `operation` text COMMENT '操作说明',
-  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='向量数据库表';
-
--- ================================================
 -- 3. 创建功能资源表 (预留)
 -- ================================================
 DROP TABLE IF EXISTS `ai_function_resource`;
@@ -73,23 +52,28 @@ CREATE TABLE `ai_function_resource` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='功能资源表';
 
 -- ================================================
--- 4. 创建嵌入模型表 (预留)
+-- 4. 创建嵌入模型资源表
 -- ================================================
-DROP TABLE IF EXISTS `ai_embedding_model`;
-CREATE TABLE `ai_embedding_model` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `model_name` varchar(100) NOT NULL COMMENT '模型名称',
-  `model_type` varchar(50) NOT NULL COMMENT '模型类型',
-  `api_url` varchar(500) NOT NULL COMMENT 'API地址',
-  `active` char(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
+DROP TABLE IF EXISTS `embedding_model_resource`;
+CREATE TABLE `embedding_model_resource` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '序号',
+  `resource_name` varchar(100) NOT NULL COMMENT '资源名称',
+  `resource_type` varchar(50) NOT NULL COMMENT '资源类型',
+  `api_key` varchar(255) NOT NULL COMMENT 'apiKey',
+  `secret_key` varchar(255) DEFAULT NULL COMMENT 'secretKey',
+  `api_url` varchar(500) NOT NULL COMMENT 'apiUrl',
+  `dimension` int(11) DEFAULT 1536 COMMENT 'dimension',
+  `frequency_limit` int(11) DEFAULT 100 COMMENT '频率限制(次/分钟)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `active` char(1) DEFAULT '0' COMMENT '是否启用（0正常 1停用）',
   `operation` text COMMENT '操作说明',
   `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='嵌入模型表';
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_resource_name` (`resource_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='嵌入模型资源表';
 
 -- ================================================
 -- 5. 插入测试数据
@@ -97,6 +81,12 @@ CREATE TABLE `ai_embedding_model` (
 INSERT INTO `ai_model_resource` (`resource_name`, `resource_type`, `default_model`, `api_key`, `secret_key`, `api_url`, `frequency_limit`, `active`, `operation`, `extra_key`, `create_by`, `remark`) VALUES
 ('OpenAI GPT-4', 'LLM', 'gpt-4', 'sk-test-key-123', NULL, 'https://api.openai.com/v1/chat/completions', 60, '0', '测试OpenAI GPT-4模型', '{"temperature": 0.7, "max_tokens": 1000}', 'admin', 'OpenAI GPT-4测试资源'),
 ('百度文心一言', 'LLM', 'ernie-bot', 'test-api-key', 'test-secret-key', 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', 100, '0', '测试百度文心一言', '{"temperature": 0.5}', 'admin', '百度文心一言测试资源');
+
+-- 嵌入模型资源测试数据
+INSERT INTO `embedding_model_resource` (`resource_name`, `resource_type`, `api_key`, `secret_key`, `api_url`, `dimension`, `frequency_limit`, `active`, `operation`, `create_by`, `remark`) VALUES
+('OpenAI Text Embedding', 'TEXT_EMBEDDING', 'sk-test-embedding-key', NULL, 'https://api.openai.com/v1/embeddings', 1536, 100, '0', '高质量文本嵌入模型，支持多语言', 'admin', 'OpenAI官方嵌入模型'),
+('百度嵌入模型', 'TEXT_EMBEDDING', 'test-baidu-key', 'test-secret', 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/embedding-v1', 384, 60, '0', '中文优化嵌入模型，适合中文场景', 'admin', '百度文心嵌入模型'),
+('智谱嵌入模型', 'TEXT_EMBEDDING', 'test-zhipu-key', NULL, 'https://open.bigmodel.cn/api/paas/v4/embeddings', 1024, 80, '0', '国产嵌入模型，性能优异', 'admin', '智谱AI嵌入模型');
 
 -- ================================================
 -- 6. 菜单配置

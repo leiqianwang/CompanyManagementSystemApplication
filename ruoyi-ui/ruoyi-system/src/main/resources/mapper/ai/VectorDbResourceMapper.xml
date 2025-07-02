@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.ai.mapper.VectorDbResourceMapper">
+    
+    <resultMap type="VectorDbResource" id="VectorDbResourceResult">
+        <result property="id"    column="id"    />
+        <result property="dbName"    column="db_name"    />
+        <result property="dbType"    column="db_type"    />
+        <result property="connectionUrl"    column="connection_url"    />
+        <result property="apiKey"    column="api_key"    />
+        <result property="username"    column="username"    />
+        <result property="password"    column="password"    />
+        <result property="databaseName"    column="database_name"    />
+        <result property="collectionName"    column="collection_name"    />
+        <result property="dimension"    column="dimension"    />
+        <result property="maxConnections"    column="max_connections"    />
+        <result property="timeout"    column="timeout"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="active"    column="active"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectVectorDbResourceVo">
+        select id, db_name, db_type, connection_url, api_key, username, password, database_name, collection_name, dimension, max_connections, timeout, create_time, update_time, active, create_by, update_by, remark from vector_db_resource
+    </sql>
+
+    <select id="selectVectorDbResourceList" parameterType="VectorDbResource" resultMap="VectorDbResourceResult">
+        <include refid="selectVectorDbResourceVo"/>
+        <where>  
+            <if test="dbName != null  and dbName != ''"> and db_name like concat('%', #{dbName}, '%')</if>
+            <if test="dbType != null  and dbType != ''"> and db_type = #{dbType}</if>
+            <if test="connectionUrl != null  and connectionUrl != ''"> and connection_url like concat('%', #{connectionUrl}, '%')</if>
+            <if test="apiKey != null  and apiKey != ''"> and api_key = #{apiKey}</if>
+            <if test="username != null  and username != ''"> and username like concat('%', #{username}, '%')</if>
+            <if test="databaseName != null  and databaseName != ''"> and database_name like concat('%', #{databaseName}, '%')</if>
+            <if test="collectionName != null  and collectionName != ''"> and collection_name like concat('%', #{collectionName}, '%')</if>
+            <if test="dimension != null "> and dimension = #{dimension}</if>
+            <if test="maxConnections != null "> and max_connections = #{maxConnections}</if>
+            <if test="timeout != null "> and timeout = #{timeout}</if>
+            <if test="active != null  and active != ''"> and active = #{active}</if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectVectorDbResourceById" parameterType="Long" resultMap="VectorDbResourceResult">
+        <include refid="selectVectorDbResourceVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertVectorDbResource" parameterType="VectorDbResource" useGeneratedKeys="true" keyProperty="id">
+        insert into vector_db_resource
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dbName != null and dbName != ''">db_name,</if>
+            <if test="dbType != null and dbType != ''">db_type,</if>
+            <if test="connectionUrl != null and connectionUrl != ''">connection_url,</if>
+            <if test="apiKey != null">api_key,</if>
+            <if test="username != null">username,</if>
+            <if test="password != null">password,</if>
+            <if test="databaseName != null">database_name,</if>
+            <if test="collectionName != null">collection_name,</if>
+            <if test="dimension != null">dimension,</if>
+            <if test="maxConnections != null">max_connections,</if>
+            <if test="timeout != null">timeout,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="active != null">active,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dbName != null and dbName != ''">#{dbName},</if>
+            <if test="dbType != null and dbType != ''">#{dbType},</if>
+            <if test="connectionUrl != null and connectionUrl != ''">#{connectionUrl},</if>
+            <if test="apiKey != null">#{apiKey},</if>
+            <if test="username != null">#{username},</if>
+            <if test="password != null">#{password},</if>
+            <if test="databaseName != null">#{databaseName},</if>
+            <if test="collectionName != null">#{collectionName},</if>
+            <if test="dimension != null">#{dimension},</if>
+            <if test="maxConnections != null">#{maxConnections},</if>
+            <if test="timeout != null">#{timeout},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="active != null">#{active},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVectorDbResource" parameterType="VectorDbResource">
+        update vector_db_resource
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dbName != null and dbName != ''">db_name = #{dbName},</if>
+            <if test="dbType != null and dbType != ''">db_type = #{dbType},</if>
+            <if test="connectionUrl != null and connectionUrl != ''">connection_url = #{connectionUrl},</if>
+            <if test="apiKey != null">api_key = #{apiKey},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="databaseName != null">database_name = #{databaseName},</if>
+            <if test="collectionName != null">collection_name = #{collectionName},</if>
+            <if test="dimension != null">dimension = #{dimension},</if>
+            <if test="maxConnections != null">max_connections = #{maxConnections},</if>
+            <if test="timeout != null">timeout = #{timeout},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="active != null">active = #{active},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVectorDbResourceById" parameterType="Long">
+        delete from vector_db_resource where id = #{id}
+    </delete>
+
+    <delete id="deleteVectorDbResourceByIds" parameterType="String">
+        delete from vector_db_resource where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

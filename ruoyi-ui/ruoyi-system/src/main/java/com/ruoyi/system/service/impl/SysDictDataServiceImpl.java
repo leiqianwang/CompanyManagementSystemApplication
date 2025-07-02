@@ -47,7 +47,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     /**
      * 根据字典数据ID查询信息
      * 
-     * @param dictCode 字典数据ID
+     * @param dictCode 字典数据IDgit remote set-url origin https://gitee.com/zeya-network/jade-engine-backend.git
      * @return 字典数据
      */
     @Override
