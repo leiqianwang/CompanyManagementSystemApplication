@@ -1,53 +1,83 @@
 import request from '@/utils/request'
 
-// 查询函数资源列表
+// 查询Function资源列表
 export function listFunctionResource(query) {
   return request({
-    url: '/system/functionResource/list',
+    url: '/ai/functionResource/list',
     method: 'get',
     params: query
   })
 }
 
-// 查询函数资源详细
+// 查询Function资源详细
 export function getFunctionResource(id) {
   return request({
-    url: '/system/functionResource/' + id,
+    url: '/ai/functionResource/' + id,
     method: 'get'
   })
 }
 
-// 新增函数资源
+// 新增Function资源
 export function addFunctionResource(data) {
   return request({
-    url: '/system/functionResource',
+    url: '/ai/functionResource',
     method: 'post',
     data: data
   })
 }
 
-// 修改函数资源
+// 修改Function资源
 export function updateFunctionResource(data) {
   return request({
-    url: '/system/functionResource',
+    url: '/ai/functionResource',
     method: 'put',
     data: data
   })
 }
 
-// 删除函数资源
+// 删除Function资源
 export function delFunctionResource(id) {
   return request({
-    url: '/system/functionResource/' + id,
+    url: '/ai/functionResource/' + id,
     method: 'delete'
   })
 }
 
-// 测试函数资源
-export function testFunctionResource(data) {
+// 导出Function资源
+export function exportFunctionResource(query) {
   return request({
-    url: '/system/functionResource/test',
+    url: '/ai/functionResource/export',
     method: 'post',
+    params: query
+  })
+}
+
+// Function资源状态修改
+export function changeFunctionResourceStatus(id, isEnabled) {
+  const data = {
+    id,
+    isEnabled
+  }
+  return request({
+    url: '/ai/functionResource/changeStatus',
+    method: 'put',
     data: data
+  })
+}
+
+// 根据编号获取Function资源详细信息
+export function getFunctionResourceByCode(functionCode) {
+  return request({
+    url: '/ai/functionResource/getByCode/' + functionCode,
+    method: 'get'
+  })
+}
+
+// 检查Function编号是否唯一
+export function checkFunctionCodeUnique(functionCode) {
+  return request({
+    url: '/ai/functionResource/checkFunctionCodeUnique',
+    method: 'get',
+    params: { functionCode }
   })
 }

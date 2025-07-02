@@ -158,18 +158,6 @@ VALUES('向量数据库删除', @vectorDatabaseMenuId, '4', '', '', 1, 0, 'F', '
 INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
 VALUES('向量数据库测试', @vectorDatabaseMenuId, '5', '', '', 1, 0, 'F', '0', '0', 'ai:vectorDatabase:test', '', 'admin', sysdate(), '', null, '');
 
--- 功能资源权限按钮
-INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
-VALUES('功能资源查询', @functionResourceMenuId, '1', '', '', 1, 0, 'F', '0', '0', 'ai:functionResource:query', '', 'admin', sysdate(), '', null, '');
-
-INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
-VALUES('功能资源新增', @functionResourceMenuId, '2', '', '', 1, 0, 'F', '0', '0', 'ai:functionResource:add', '', 'admin', sysdate(), '', null, '');
-
-INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
-VALUES('功能资源修改', @functionResourceMenuId, '3', '', '', 1, 0, 'F', '0', '0', 'ai:functionResource:edit', '', 'admin', sysdate(), '', null, '');
-
-INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
-VALUES('功能资源删除', @functionResourceMenuId, '4', '', '', 1, 0, 'F', '0', '0', 'ai:functionResource:remove', '', 'admin', sysdate(), '', null, '');
 
 -- 嵌入模型权限按钮
 INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
