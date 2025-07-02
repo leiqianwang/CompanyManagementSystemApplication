@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询向量数据库资源列表
 export function listVectorDb(query) {
   return request({
-    url: '/ai/vector-database/list',
+    url: '/ai/vectorDb/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listVectorDb(query) {
 // 查询向量数据库资源详细
 export function getVectorDb(id) {
   return request({
-    url: '/ai/vector-database/' + id,
+    url: '/ai/vectorDb/' + id,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getVectorDb(id) {
 // 新增向量数据库资源
 export function addVectorDb(data) {
   return request({
-    url: '/ai/vector-database',
+    url: '/ai/vectorDb',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addVectorDb(data) {
 // 修改向量数据库资源
 export function updateVectorDb(data) {
   return request({
-    url: '/ai/vector-database',
+    url: '/ai/vectorDb',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updateVectorDb(data) {
 // 删除向量数据库资源
 export function delVectorDb(id) {
   return request({
-    url: '/ai/vector-database/' + id,
+    url: '/ai/vectorDb/' + id,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export function delVectorDb(id) {
 // 测试向量数据库连接
 export function testVectorDb(id) {
   return request({
-    url: '/ai/vector-database/test/' + id,
+    url: '/ai/vectorDb/test/' + id,
     method: 'post'
   })
 }
@@ -54,7 +54,7 @@ export function testVectorDb(id) {
 // 导出向量数据库资源
 export function exportVectorDb(query) {
   return request({
-    url: '/ai/vector-database/export',
+    url: '/ai/vectorDb/export',
     method: 'post',
     params: query
   })
