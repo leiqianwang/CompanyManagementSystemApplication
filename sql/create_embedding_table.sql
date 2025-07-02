@@ -27,3 +27,5 @@ INSERT INTO `embedding_model_resource` (`resource_name`, `resource_type`, `api_k
 ('OpenAI Text Embedding', 'TEXT_EMBEDDING', 'sk-test-embedding-key', NULL, 'https://api.openai.com/v1/embeddings', 1536, 100, '0', '高质量文本嵌入模型，支持多语言', 'admin', 'OpenAI官方嵌入模型'),
 ('百度嵌入模型', 'TEXT_EMBEDDING', 'test-baidu-key', 'test-secret', 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/embedding-v1', 384, 60, '0', '中文优化嵌入模型，适合中文场景', 'admin', '百度文心嵌入模型'),
 ('智谱嵌入模型', 'TEXT_EMBEDDING', 'test-zhipu-key', NULL, 'https://open.bigmodel.cn/api/paas/v4/embeddings', 1024, 80, '0', '国产嵌入模型，性能优异', 'admin', '智谱AI嵌入模型');
+
+

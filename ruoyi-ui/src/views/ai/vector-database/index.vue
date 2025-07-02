@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="88px">
-      <el-form-item label="模型名称" prop="modelName">
+      <el-form-item label="数据库名称" prop="dbName">
         <el-input
-          v-model="queryParams.modelName"
-          placeholder="请输入模型名称"
+          v-model="queryParams.dbName"
+          placeholder="请输入数据库名称"
           clearable
           style="width: 240px"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="模型类型" prop="modelType">
-        <el-select v-model="queryParams.modelType" placeholder="请选择模型类型" clearable>
+      <el-form-item label="数据库类型" prop="dbType">
+        <el-select v-model="queryParams.dbType" placeholder="请选择数据库类型" clearable>
           <el-option
             v-for="dict in dict.type.vector_db_type"
             :key="dict.value"
@@ -44,7 +44,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['ai:vectordb:add']"
+          v-hasPermi="['ai:vectorDatabase:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -55,7 +55,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['ai:vectordb:edit']"
+          v-hasPermi="['ai:vectorDatabase:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -66,8 +66,18 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['ai:vectordb:remove']"
+          v-hasPermi="['ai:vectorDatabase:remove']"
         >删除</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['ai:vectorDatabase:export']"
+        >导出</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -75,8 +85,9 @@
           plain
           icon="el-icon-connection"
           size="mini"
+          :disabled="single"
           @click="handleTest"
-          v-hasPermi="['ai:vectordb:test']"
+          v-hasPermi="['ai:vectorDatabase:test']"
         >测试连接</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -84,24 +95,45 @@
 
     <el-table v-loading="loading" :data="vectorDbList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="id" width="80" />
-      <el-table-column label="模型名称" align="center" prop="modelName" :show-overflow-tooltip="true" />
-      <el-table-column label="模型类型" align="center" prop="modelType" width="120">
+      <el-table-column label="序号" align="center" prop="id" width="80" />
+      <el-table-column label="数据库名称" align="center" prop="dbName" width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="数据库类型" align="center" prop="dbType" width="120">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.vector_db_type" :value="scope.row.modelType"/>
+          <dict-tag :options="dict.type.vector_db_type" :value="scope.row.dbType"/>
         </template>
       </el-table-column>
-      <el-table-column label="向量维度" align="center" prop="embedding" width="100" />
-      <el-table-column label="连接地址" align="center" prop="url" :show-overflow-tooltip="true" width="200" />
-      <el-table-column label="数据库名" align="center" prop="dbName" :show-overflow-tooltip="true" />
+      <el-table-column label="连接地址" align="center" prop="connectionUrl" width="200" :show-overflow-tooltip="true" />
+      <el-table-column label="API密钥" align="center" prop="apiKey" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.apiKey">{{ scope.row.apiKey.substring(0, 8) }}****</span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="用户名" align="center" prop="username" width="100" />
+      <el-table-column label="数据库名" align="center" prop="databaseName" width="120" />
+      <el-table-column label="集合名称" align="center" prop="collectionName" width="120" />
+      <el-table-column label="向量维度" align="center" prop="dimension" width="100" />
+      <el-table-column label="最大连接数" align="center" prop="maxConnections" width="110" />
+      <el-table-column label="超时时间" align="center" prop="timeout" width="110">
+        <template slot-scope="scope">
+          {{ scope.row.timeout }}ms
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="active" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.active"/>
+          <el-switch
+            v-model="scope.row.active"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="0"
+            inactive-value="1"
+            @change="handleStatusChange(scope.row)"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="180">
@@ -111,21 +143,21 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['ai:vectordb:edit']"
+            v-hasPermi="['ai:vectorDatabase:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-connection"
             @click="handleTest(scope.row)"
-            v-hasPermi="['ai:vectordb:test']"
+            v-hasPermi="['ai:vectorDatabase:test']"
           >测试</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['ai:vectordb:remove']"
+            v-hasPermi="['ai:vectorDatabase:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -139,64 +171,95 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改向量数据库对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+    <!-- 添加或修改向量数据库资源对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="700px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="模型名称" prop="modelName">
-              <el-input v-model="form.modelName" placeholder="请输入模型名称" />
+            <el-form-item label="数据库名称" prop="dbName">
+              <el-input v-model="form.dbName" placeholder="请输入数据库名称" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="模型类型" prop="modelType">
-              <el-select v-model="form.modelType" placeholder="请选择模型类型" style="width: 100%">
-                <el-option
-                  v-for="dict in dict.type.vector_db_type"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
+            <el-form-item label="数据库类型" prop="dbType">
+              <el-select v-model="form.dbType" placeholder="请选择数据库类型" style="width: 100%">
+                <el-option label="Chroma" value="CHROMA" />
+                <el-option label="Pinecone" value="PINECONE" />
+                <el-option label="Milvus" value="MILVUS" />
+                <el-option label="Weaviate" value="WEAVIATE" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
+          <el-col :span="24">
+            <el-form-item label="连接地址" prop="connectionUrl">
+              <el-input v-model="form.connectionUrl" placeholder="请输入连接地址" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
-            <el-form-item label="向量维度" prop="embedding">
-              <el-input-number v-model="form.embedding" :min="1" placeholder="向量维度" style="width: 100%" />
+            <el-form-item label="API密钥" prop="apiKey">
+              <el-input v-model="form.apiKey" type="password" placeholder="请输入API密钥（可选）" show-password />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="数据库名" prop="dbName">
-              <el-input v-model="form.dbName" placeholder="请输入数据库名称" />
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" placeholder="请输入用户名（可选）" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="form.password" type="password" placeholder="请输入密码（可选）" show-password />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="数据库名" prop="databaseName">
+              <el-input v-model="form.databaseName" placeholder="请输入数据库名" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="集合名称" prop="collectionName">
+              <el-input v-model="form.collectionName" placeholder="请输入集合名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="向量维度" prop="dimension">
+              <el-input-number v-model="form.dimension" :min="1" :max="10000" placeholder="向量维度" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="最大连接数" prop="maxConnections">
+              <el-input-number v-model="form.maxConnections" :min="1" :max="100" placeholder="最大连接数" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="超时时间(ms)" prop="timeout">
+              <el-input-number v-model="form.timeout" :min="1000" :max="300000" placeholder="超时时间" style="width: 100%" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="连接地址" prop="url">
-              <el-input v-model="form.url" placeholder="请输入连接地址" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
             <el-form-item label="状态" prop="active">
               <el-radio-group v-model="form.active">
-                <el-radio
-                  v-for="dict in dict.type.sys_normal_disable"
-                  :key="dict.value"
-                  :label="dict.value"
-                >{{dict.label}}</el-radio>
+                <el-radio label="0">正常</el-radio>
+                <el-radio label="1">停用</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="操作说明" prop="operation">
-              <el-input v-model="form.operation" type="textarea" placeholder="请输入操作说明" />
+            <el-form-item label="备注" prop="remark">
+              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -210,7 +273,7 @@
 </template>
 
 <script>
-import { listVectorDb, getVectorDb, delVectorDb, addVectorDb, updateVectorDb } from "@/api/ai/vectorDatabase"
+import { listVectorDb, getVectorDb, delVectorDb, addVectorDb, updateVectorDb, testVectorDb } from "@/api/ai/vectorDatabase"
 
 export default {
   name: "VectorDatabase",
@@ -229,7 +292,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 向量数据库表格数据
+      // 向量数据库资源表格数据
       vectorDbList: [],
       // 弹出层标题
       title: "",
@@ -239,25 +302,32 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        modelName: null,
-        modelType: null,
+        dbName: null,
+        dbType: null,
         active: null
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-        modelName: [
-          { required: true, message: "模型名称不能为空", trigger: "blur" }
+        dbName: [
+          { required: true, message: "数据库名称不能为空", trigger: "blur" }
         ],
-        modelType: [
-          { required: true, message: "模型类型不能为空", trigger: "change" }
+        dbType: [
+          { required: true, message: "数据库类型不能为空", trigger: "change" }
         ],
-        url: [
+        connectionUrl: [
           { required: true, message: "连接地址不能为空", trigger: "blur" }
         ],
-        embedding: [
-          { required: true, message: "向量维度不能为空", trigger: "blur" }
+        dimension: [
+          { required: true, message: "向量维度不能为空", trigger: "blur" },
+          { type: 'number', min: 1, max: 10000, message: '向量维度必须在1-10000之间', trigger: 'blur' }
+        ],
+        maxConnections: [
+          { type: 'number', min: 1, max: 100, message: '最大连接数必须在1-100之间', trigger: 'blur' }
+        ],
+        timeout: [
+          { type: 'number', min: 1000, max: 300000, message: '超时时间必须在1000-300000毫秒之间', trigger: 'blur' }
         ]
       }
     };
@@ -266,7 +336,7 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询向量数据库列表 */
+    /** 查询向量数据库资源列表 */
     getList() {
       this.loading = true;
       listVectorDb(this.queryParams).then(response => {
@@ -284,14 +354,19 @@ export default {
     reset() {
       this.form = {
         id: null,
-        modelName: null,
-        modelType: null,
-        embedding: null,
-        url: null,
         dbName: null,
-        createTime: null,
+        dbType: null,
+        connectionUrl: null,
+        apiKey: null,
+        username: null,
+        password: null,
+        databaseName: null,
+        collectionName: null,
+        dimension: 1536,
+        maxConnections: 10,
+        timeout: 30000,
         active: "0",
-        operation: null
+        remark: null
       };
       this.resetForm("form");
     },
@@ -315,7 +390,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加向量数据库";
+      this.title = "添加向量数据库资源";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -324,7 +399,7 @@ export default {
       getVectorDb(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改向量数据库";
+        this.title = "修改向量数据库资源";
       });
     },
     /** 提交按钮 */
@@ -350,22 +425,44 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除向量数据库编号为"' + ids + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除向量数据库资源编号为"' + ids + '"的数据项？').then(function() {
         return delVectorDb(ids);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
     },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('ai/vectorDb/export', {
+        ...this.queryParams
+      }, `vectorDb_${new Date().getTime()}.xlsx`)
+    },
+    /** 状态修改 */
+    handleStatusChange(row) {
+      let text = row.active === "0" ? "启用" : "停用";
+      this.$modal.confirm('确认要"' + text + '""' + row.dbName + '"吗？').then(function() {
+        return updateVectorDb(row);
+      }).then(() => {
+        this.$modal.msgSuccess(text + "成功");
+      }).catch(function() {
+        row.active = row.active === "0" ? "1" : "0";
+      });
+    },
     /** 测试连接 */
     handleTest(row) {
-      this.$modal.confirm('是否测试连接"' + row.modelName + '"？').then(function() {
-        // TODO: 实现测试连接逻辑
-        return Promise.resolve();
-      }).then(() => {
+      const id = row ? row.id : this.ids[0];
+      if (!id) {
+        this.$modal.msgWarning("请选择要测试的数据库");
+        return;
+      }
+      this.$modal.loading("正在测试连接...");
+      testVectorDb(id).then(response => {
+        this.$modal.closeLoading();
         this.$modal.msgSuccess("连接测试成功");
-      }).catch(() => {
-        this.$modal.msgError("连接测试失败");
+      }).catch(error => {
+        this.$modal.closeLoading();
+        this.$modal.msgError("连接测试失败: " + (error.msg || error.message));
       });
     }
   }

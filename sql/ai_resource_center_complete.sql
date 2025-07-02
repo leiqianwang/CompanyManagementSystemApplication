@@ -33,27 +33,6 @@ CREATE TABLE `ai_model_resource` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='AI模型资源表';
 
 -- ================================================
--- 2. 创建向量数据库表 (预留)
--- ================================================
-DROP TABLE IF EXISTS `ai_vector_database`;
-CREATE TABLE `ai_vector_database` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `model_name` varchar(100) NOT NULL COMMENT '模型名称',
-  `model_type` varchar(50) NOT NULL COMMENT '模型类型',
-  `embedding` int(11) DEFAULT NULL COMMENT '向量维度',
-  `url` varchar(500) NOT NULL COMMENT '连接地址',
-  `db_name` varchar(100) DEFAULT NULL COMMENT '数据库名称',
-  `active` char(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `operation` text COMMENT '操作说明',
-  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='向量数据库表';
-
--- ================================================
 -- 3. 创建功能资源表 (预留)
 -- ================================================
 DROP TABLE IF EXISTS `ai_function_resource`;
