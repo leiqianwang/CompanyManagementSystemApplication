@@ -161,6 +161,22 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
+  },
+  {
+    path: '/ai',
+    component: Layout,
+    children: [
+      {
+        path: 'chat',
+        component: () => import('@/views/ai/chat/index'),
+        name: 'AiChat',
+        meta: { 
+          title: 'AI聊天', 
+          icon: 'message',
+          noCache: false
+        }
+      }
+    ]
   }
 ]
 

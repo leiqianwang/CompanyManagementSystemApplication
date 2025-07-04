@@ -52,7 +52,7 @@ spring:
     # 国际化资源文件路径
     basename: i18n/messages
   profiles:
-    active: druid
+    active: druid,ai
   # 文件上传
   servlet:
     multipart:
@@ -127,3 +127,29 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# AI 聊天配置
+ai:
+  # AI 提供商 (openai, azure, anthropic)
+  provider: openai
+  # OpenAI 配置
+  openai:
+    # API Key (请设置环境变量 OPENAI_API_KEY 或在此填入)
+    api-key: ${OPENAI_API_KEY:}
+    # API 基础URL (可用于代理或本地部署)
+    base-url: https://api.openai.com/v1
+    # 聊天模型
+    model: gpt-3.5-turbo
+    # 嵌入模型
+    embedding-model: text-embedding-ada-002
+  # Azure OpenAI 配置 (备用)
+  azure:
+    api-key: ${AZURE_OPENAI_API_KEY:}
+    endpoint: ${AZURE_OPENAI_ENDPOINT:}
+  # Anthropic 配置 (备用)
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+  # 工具配置
+  tools:
+    baidu:
+      enabled: true
