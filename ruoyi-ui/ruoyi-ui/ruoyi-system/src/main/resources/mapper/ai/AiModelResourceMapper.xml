@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.ai.mapper.AiModelResourceMapper">
+    
+    <resultMap type="AiModelResource" id="AiModelResourceResult">
+        <result property="id"    column="id"    />
+        <result property="resourceName"    column="resource_name"    />
+        <result property="resourceType"    column="resource_type"    />
+        <result property="defaultModel"    column="default_model"    />
+        <result property="apiKey"    column="api_key"    />
+        <result property="secretKey"    column="secret_key"    />
+        <result property="apiUrl"    column="api_url"    />
+        <result property="frequencyLimit"    column="frequency_limit"    />
+        <result property="creationTime"    column="creation_time"    />
+        <result property="active"    column="active"    />
+        <result property="operation"    column="operation"    />
+        <result property="extraKey"    column="extra_key"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectAiModelResourceVo">
+        select id, resource_name, resource_type, default_model, api_key, secret_key, api_url, frequency_limit, creation_time, active, operation, extra_key, create_by, create_time, update_by, update_time, remark from ai_model_resource
+    </sql>
+
+    <select id="selectAiModelResourceList" parameterType="AiModelResource" resultMap="AiModelResourceResult">
+        <include refid="selectAiModelResourceVo"/>
+        <where>  
+            <if test="resourceName != null  and resourceName != ''"> and resource_name like concat('%', #{resourceName}, '%')</if>
+            <if test="resourceType != null  and resourceType != ''"> and resource_type = #{resourceType}</if>
+            <if test="defaultModel != null  and defaultModel != ''"> and default_model like concat('%', #{defaultModel}, '%')</if>
+            <if test="apiKey != null  and apiKey != ''"> and api_key = #{apiKey}</if>
+            <if test="secretKey != null  and secretKey != ''"> and secret_key = #{secretKey}</if>
+            <if test="apiUrl != null  and apiUrl != ''"> and api_url like concat('%', #{apiUrl}, '%')</if>
+            <if test="frequencyLimit != null "> and frequency_limit = #{frequencyLimit}</if>
+            <if test="creationTime != null "> and creation_time = #{creationTime}</if>
+            <if test="active != null  and active != ''"> and active = #{active}</if>
+            <if test="operation != null  and operation != ''"> and operation = #{operation}</if>
+            <if test="extraKey != null  and extraKey != ''"> and extra_key = #{extraKey}</if>
+        </where>
+    </select>
+    
+    <select id="selectAiModelResourceById" parameterType="Long" resultMap="AiModelResourceResult">
+        <include refid="selectAiModelResourceVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertAiModelResource" parameterType="AiModelResource" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_model_resource
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="resourceName != null and resourceName != ''">resource_name,</if>
+            <if test="resourceType != null and resourceType != ''">resource_type,</if>
+            <if test="defaultModel != null">default_model,</if>
+            <if test="apiKey != null and apiKey != ''">api_key,</if>
+            <if test="secretKey != null">secret_key,</if>
+            <if test="apiUrl != null and apiUrl != ''">api_url,</if>
+            <if test="frequencyLimit != null">frequency_limit,</if>
+            <if test="creationTime != null">creation_time,</if>
+            <if test="active != null">active,</if>
+            <if test="operation != null">operation,</if>
+            <if test="extraKey != null">extra_key,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="resourceName != null and resourceName != ''">#{resourceName},</if>
+            <if test="resourceType != null and resourceType != ''">#{resourceType},</if>
+            <if test="defaultModel != null">#{defaultModel},</if>
+            <if test="apiKey != null and apiKey != ''">#{apiKey},</if>
+            <if test="secretKey != null">#{secretKey},</if>
+            <if test="apiUrl != null and apiUrl != ''">#{apiUrl},</if>
+            <if test="frequencyLimit != null">#{frequencyLimit},</if>
+            <if test="creationTime != null">#{creationTime},</if>
+            <if test="active != null">#{active},</if>
+            <if test="operation != null">#{operation},</if>
+            <if test="extraKey != null">#{extraKey},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAiModelResource" parameterType="AiModelResource">
+        update ai_model_resource
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="resourceName != null and resourceName != ''">resource_name = #{resourceName},</if>
+            <if test="resourceType != null and resourceType != ''">resource_type = #{resourceType},</if>
+            <if test="defaultModel != null">default_model = #{defaultModel},</if>
+            <if test="apiKey != null and apiKey != ''">api_key = #{apiKey},</if>
+            <if test="secretKey != null">secret_key = #{secretKey},</if>
+            <if test="apiUrl != null and apiUrl != ''">api_url = #{apiUrl},</if>
+            <if test="frequencyLimit != null">frequency_limit = #{frequencyLimit},</if>
+            <if test="creationTime != null">creation_time = #{creationTime},</if>
+            <if test="active != null">active = #{active},</if>
+            <if test="operation != null">operation = #{operation},</if>
+            <if test="extraKey != null">extra_key = #{extraKey},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAiModelResourceById" parameterType="Long">
+        delete from ai_model_resource where id = #{id}
+    </delete>
+
+    <delete id="deleteAiModelResourceByIds" parameterType="String">
+        delete from ai_model_resource where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

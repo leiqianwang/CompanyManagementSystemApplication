@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.ai.mapper.FunctionResourceMapper">
+    
+    <resultMap type="FunctionResource" id="FunctionResourceResult">
+        <result property="id"    column="id"    />
+        <result property="functionCode"    column="function_code"    />
+        <result property="functionDescription"    column="function_description"    />
+        <result property="categoryClass"    column="category_class"    />
+        <result property="executionMethod"    column="execution_method"    />
+        <result property="parameterManagement"    column="parameter_management"    />
+        <result property="isEnabled"    column="is_enabled"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectFunctionResourceVo">
+        select id, function_code, function_description, category_class, execution_method, parameter_management, is_enabled, create_by, create_time, update_by, update_time, remark from function_resource
+    </sql>
+
+    <select id="selectFunctionResourceList" parameterType="FunctionResource" resultMap="FunctionResourceResult">
+        <include refid="selectFunctionResourceVo"/>
+        <where>  
+            <if test="functionCode != null  and functionCode != ''"> and function_code like concat('%', #{functionCode}, '%')</if>
+            <if test="functionDescription != null  and functionDescription != ''"> and function_description like concat('%', #{functionDescription}, '%')</if>
+            <if test="categoryClass != null  and categoryClass != ''"> and category_class like concat('%', #{categoryClass}, '%')</if>
+            <if test="executionMethod != null  and executionMethod != ''"> and execution_method like concat('%', #{executionMethod}, '%')</if>
+            <if test="isEnabled != null  and isEnabled != ''"> and is_enabled = #{isEnabled}</if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectFunctionResourceById" parameterType="Long" resultMap="FunctionResourceResult">
+        <include refid="selectFunctionResourceVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectFunctionResourceByCode" parameterType="String" resultMap="FunctionResourceResult">
+        <include refid="selectFunctionResourceVo"/>
+        where function_code = #{functionCode}
+    </select>
+
+    <select id="checkFunctionCodeUnique" parameterType="String" resultType="int">
+        select count(1) from function_resource where function_code = #{functionCode}
+    </select>
+        
+    <insert id="insertFunctionResource" parameterType="FunctionResource" useGeneratedKeys="true" keyProperty="id">
+        insert into function_resource
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="functionCode != null and functionCode != ''">function_code,</if>
+            <if test="functionDescription != null">function_description,</if>
+            <if test="categoryClass != null">category_class,</if>
+            <if test="executionMethod != null">execution_method,</if>
+            <if test="parameterManagement != null">parameter_management,</if>
+            <if test="isEnabled != null">is_enabled,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="functionCode != null and functionCode != ''">#{functionCode},</if>
+            <if test="functionDescription != null">#{functionDescription},</if>
+            <if test="categoryClass != null">#{categoryClass},</if>
+            <if test="executionMethod != null">#{executionMethod},</if>
+            <if test="parameterManagement != null">#{parameterManagement},</if>
+            <if test="isEnabled != null">#{isEnabled},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFunctionResource" parameterType="FunctionResource">
+        update function_resource
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="functionCode != null and functionCode != ''">function_code = #{functionCode},</if>
+            <if test="functionDescription != null">function_description = #{functionDescription},</if>
+            <if test="categoryClass != null">category_class = #{categoryClass},</if>
+            <if test="executionMethod != null">execution_method = #{executionMethod},</if>
+            <if test="parameterManagement != null">parameter_management = #{parameterManagement},</if>
+            <if test="isEnabled != null">is_enabled = #{isEnabled},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteFunctionResourceById" parameterType="Long">
+        delete from function_resource where id = #{id}
+    </delete>
+
+    <delete id="deleteFunctionResourceByIds" parameterType="String">
+        delete from function_resource where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
