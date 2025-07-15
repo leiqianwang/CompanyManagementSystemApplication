@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 public class ChatSessionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
-    private String sessionId;
+    private Long sessionId;
 
     @Column(nullable = false)
     private String userId;
@@ -29,11 +26,8 @@ public class ChatSessionEntity {
     private Boolean isActive;
 
     // getter/setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getSessionId() { return sessionId; }
-    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public Long getSessionId() { return sessionId; }
+    public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }

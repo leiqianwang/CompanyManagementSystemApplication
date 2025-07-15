@@ -30,3 +30,26 @@ VALUES('编辑会话', @chat_menu_id, 4, '', '', '', 1, 0, 'F', '0', '0', 'ai:ch
 
 INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
 VALUES('删除会话', @chat_menu_id, 5, '', '', '', 1, 0, 'F', '0', '0', 'ai:chat:remove', '#', 'admin', sysdate(), '', null, '');
+
+-- 插入AI聊天会话表, 用于存储聊天会话信息
+CREATE TABLE ai_chat_session (
+    session_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(64) NOT NULL,
+    title VARCHAR(128),
+    message_count INT DEFAULT 0,
+    last_message_content VARCHAR(512),
+    created_at DATETIME,
+    last_activity DATETIME,
+    is_active TINYINT(1) DEFAULT 1
+);
+
+-- 插入AI聊天消息表, 用于存储聊天消息信息
+CREATE TABLE ai_chat_message (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    session_id BIGINT NOT NULL,
+    user_id BIGINT,
+    username VARCHAR(64),
+    content TEXT,
+    timestamp DATETIME,
+    role VARCHAR(16)
+);
