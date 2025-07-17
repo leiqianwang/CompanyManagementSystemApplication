@@ -5,37 +5,37 @@ import java.time.LocalDateTime;
 
 /**
  * 聊天消息响应 DTO
- * 
+ *
  * @author ruoyi
  * @date 2025-07-03
  */
 public class ChatMessageResponse {
-    
+
     /** 消息ID */
     private String messageId;
-    
+
     /** 会话ID */
-    private String sessionId;
-    
+    private Long sessionId;
+
     /** 消息内容 */
     private String content;
-    
+
     /** 消息类型：user/assistant */
     private String messageType;
-    
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-    
+
     /** 是否完成 */
     private Boolean finished = true;
-    
+
     /** 使用的模型 */
     private String model;
-    
+
     /** 消耗的令牌数 */
     private Integer tokenUsage;
-    
+
     /** 错误消息 */
     private String error;
 
@@ -49,7 +49,7 @@ public class ChatMessageResponse {
         this.messageType = messageType;
     }
 
-    public ChatMessageResponse(String sessionId, String content, String messageType) {
+    public ChatMessageResponse(Long sessionId, String content, String messageType) {
         this(content, messageType);
         this.sessionId = sessionId;
     }
@@ -63,11 +63,11 @@ public class ChatMessageResponse {
         this.messageId = messageId;
     }
 
-    public String getSessionId() {
+    public Long getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
+    public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 

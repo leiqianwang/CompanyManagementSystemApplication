@@ -5,95 +5,95 @@ import java.time.LocalDateTime;
 
 /**
  * 聊天消息请求 DTO
- * 
+ *
  * @author ruoyi
  * @date 2025-07-03
  */
 public class ChatMessageRequest {
-    
-    /** 消息内容 */
-    private String message;
-    
-    /** 会话ID */
-    private String sessionId;
-    
-    /** 是否流式响应 */
-    private Boolean stream = false;
-    
-    /** 模型名称 */
-    private String model;
-    
-    /** 温度参数 */
-    private Double temperature;
-    
-    /** 最大令牌数 */
-    private Integer maxTokens;
 
-    public ChatMessageRequest() {}
+  /** 消息内容 */
+  private String message;
 
-    public ChatMessageRequest(String message, String sessionId) {
-        this.message = message;
-        this.sessionId = sessionId;
-    }
+  /** 会话ID */
+  private Long sessionId;
 
-    // getters and setters
-    public String getMessage() {
-        return message;
-    }
+  /** 是否流式响应 */
+  private Boolean stream = false;
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+  /** 模型ID */
+  private String modelId;
 
-    public String getSessionId() {
-        return sessionId;
-    }
+  /** 温度参数 */
+  private Double temperature;
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
+  /** 最大令牌数 */
+  private Integer maxTokens;
 
-    public Boolean getStream() {
-        return stream;
-    }
+  public ChatMessageRequest() {}
 
-    public void setStream(Boolean stream) {
-        this.stream = stream;
-    }
+  public ChatMessageRequest(String message, Long sessionId) {
+    this.message = message;
+    this.sessionId = sessionId;
+  }
 
-    public String getModel() {
-        return model;
-    }
+  // getters and setters
+  public String getMessage() {
+    return message;
+  }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+  public void setMessage(String message) {
+    this.message = message;
+  }
 
-    public Double getTemperature() {
-        return temperature;
-    }
+  public Long getSessionId() {
+    return sessionId;
+  }
 
-    public void setTemperature(Double temperature) {
-        this.temperature = temperature;
-    }
+  public void setSessionId(Long sessionId) {
+    this.sessionId = sessionId;
+  }
 
-    public Integer getMaxTokens() {
-        return maxTokens;
-    }
+  public String getModelId() {
+    return modelId;
+  }
 
-    public void setMaxTokens(Integer maxTokens) {
-        this.maxTokens = maxTokens;
-    }
+  public void setModelId(String modelId) {
+    this.modelId = modelId;
+  }
 
-    @Override
-    public String toString() {
-        return "ChatMessageRequest{" +
-                "message='" + message + '\'' +
-                ", sessionId='" + sessionId + '\'' +
-                ", stream=" + stream +
-                ", model='" + model + '\'' +
-                ", temperature=" + temperature +
-                ", maxTokens=" + maxTokens +
-                '}';
-    }
+  public Boolean getStream() {
+    return stream;
+  }
+
+  public void setStream(Boolean stream) {
+    this.stream = stream;
+  }
+
+  public Double getTemperature() {
+    return temperature;
+  }
+
+  public void setTemperature(Double temperature) {
+    this.temperature = temperature;
+  }
+
+  public Integer getMaxTokens() {
+    return maxTokens;
+  }
+
+  public void setMaxTokens(Integer maxTokens) {
+    this.maxTokens = maxTokens;
+  }
+
+  @Override
+  public String toString() {
+    return "ChatMessageRequest{" +
+      "message='" + message + '\'' +
+      ", sessionId=" + sessionId +
+      ", modelId='" + modelId + '\'' +
+      ", stream=" + stream +
+      ", temperature=" + temperature +
+      ", maxTokens=" + maxTokens +
+      '}';
+  }
 }

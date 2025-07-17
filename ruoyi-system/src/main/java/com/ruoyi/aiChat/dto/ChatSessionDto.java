@@ -6,41 +6,41 @@ import java.util.List;
 
 /**
  * 聊天会话 DTO
- * 
+ *
  * @author ruoyi
  * @date 2025-07-03
  */
 public class ChatSessionDto {
-    
+
     /** 会话ID */
-    private String sessionId;
-    
+    private Long sessionId;
+
     /** 会话标题 */
     private String title;
-    
+
     /** 用户ID */
     private Long userId;
-    
+
     /** 用户名 */
     private String username;
-    
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-    
+
     /** 最后更新时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
-    
+
     /** 消息数量 */
     private Integer messageCount = 0;
-    
+
     /** 会话状态：active/archived */
     private String status = "active";
-    
+
     /** 最后一条消息内容（预览用） */
     private String lastMessageContent;
-    
+
     /** 消息列表 */
     private List<ChatMessageResponse> messages;
 
@@ -49,18 +49,18 @@ public class ChatSessionDto {
         this.updateTime = LocalDateTime.now();
     }
 
-    public ChatSessionDto(String sessionId, String title) {
+    public ChatSessionDto(Long sessionId, String title) {
         this();
         this.sessionId = sessionId;
         this.title = title;
     }
 
     // getters and setters
-    public String getSessionId() {
+    public Long getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
+    public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 

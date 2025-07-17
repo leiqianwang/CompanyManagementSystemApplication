@@ -1,12 +1,99 @@
-# AI Chat Configuration
+# AI Chat Configuration - 多模型支持
 ai:
+  # OpenAI 配置
   openai:
-    # API key will be read from environment variable OPENAI_API_KEY
-    api-key: ${OPENAI_API_KEY}
+    api-key: ${OPENAI_API_KEY:}
     base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     model: ${OPENAI_MODEL:gpt-3.5-turbo}
     temperature: 0.7
     max-tokens: 2000
+    timeout: 30000
+
+  # Ollama 本地模型配置
+  ollama:
+    api-key: ${OLLAMA_API_KEY:ollama}  # Ollama 通常不需要 API key
+    base-url: ${OLLAMA_BASE_URL:http://localhost:11434/v1}
+    model: ${OLLAMA_MODEL:llama3.1:8b}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 60000
+
+  # 百度文心一言配置
+  baidu:
+    api-key: ${BAIDU_API_KEY:}
+    secret-key: ${BAIDU_SECRET_KEY:}
+    base-url: ${BAIDU_BASE_URL:https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat}
+    model: ${BAIDU_MODEL:ernie-3.5-turbo}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 百度千帆平台配置
+  qianfan:
+    api-key: ${BCE_API_KEY:}
+    secret-key: ${BCE_SECRET_KEY:}
+    base-url: ${QIANFAN_BASE_URL:https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat}
+    model: ${QIANFAN_MODEL:eb-instant}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 阿里千问配置
+  alibaba:
+    api-key: ${ALIBABA_API_KEY:}
+    base-url: ${ALIBABA_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    model: ${ALIBABA_MODEL:qwen-turbo}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 智谱清言配置
+  zhipu:
+    api-key: ${ZHIPU_API_KEY:}
+    base-url: ${ZHIPU_BASE_URL:https://open.bigmodel.cn/api/paas/v4}
+    model: ${ZHIPU_MODEL:glm-4}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 讯飞星火配置
+  xunfei:
+    api-key: ${XUNFEI_API_KEY:}
+    api-secret: ${XUNFEI_API_SECRET:}
+    app-id: ${XUNFEI_APP_ID:}
+    base-url: ${XUNFEI_BASE_URL:wss://spark-api.xf-yun.com/v3.5/chat}
+    model: ${XUNFEI_MODEL:spark-3.5}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 月之暗面 Kimi 配置
+  moonshot:
+    api-key: ${MOONSHOT_API_KEY:}
+    base-url: ${MOONSHOT_BASE_URL:https://api.moonshot.cn/v1}
+    model: ${MOONSHOT_MODEL:moonshot-v1-8k}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 零一万物配置
+  lingyiwanwu:
+    api-key: ${LINGYIWANWU_API_KEY:}
+    base-url: ${LINGYIWANWU_BASE_URL:https://api.lingyiwanwu.com/v1}
+    model: ${LINGYIWANWU_MODEL:yi-34b-chat-0205}
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000
+
+  # 工具配置
+  tools:
+    baidu:
+      enabled: ${AI_TOOLS_BAIDU_ENABLED:false}
+    weather:
+      enabled: ${AI_TOOLS_WEATHER_ENABLED:false}
+      api-key: ${WEATHER_API_KEY:}
+    translate:
+      enabled: ${AI_TOOLS_TRANSLATE_ENABLED:false}
 
 # MCP Function Calling Configuration
 mcp:

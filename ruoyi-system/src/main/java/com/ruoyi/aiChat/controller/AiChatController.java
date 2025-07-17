@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * AI聊天Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-07-03
  */
@@ -61,7 +61,7 @@ public class AiChatController extends BaseController {
      * 获取会话详情
      */
     @GetMapping("/sessions/{sessionId}")
-    public AjaxResult getSession(@PathVariable String sessionId) {
+    public AjaxResult getSession(@PathVariable Long sessionId) {
         try {
             ChatSessionDto session = aiChatService.getSession(sessionId);
             if (session == null) {
@@ -83,12 +83,12 @@ public class AiChatController extends BaseController {
         try {
             Long userId = SecurityUtils.getUserId();
             String username = SecurityUtils.getUsername();
-            
+
             String title = sessionDto.getTitle();
             if (title == null || title.trim().isEmpty()) {
                 title = "新对话";
             }
-            
+
             ChatSessionDto session = aiChatService.createSession(title, userId, username);
             return success(session);
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public class AiChatController extends BaseController {
      */
     @Log(title = "AI聊天", businessType = BusinessType.DELETE)
     @DeleteMapping("/sessions/{sessionId}")
-    public AjaxResult deleteSession(@PathVariable String sessionId) {
+    public AjaxResult deleteSession(@PathVariable Long sessionId) {
         try {
             boolean success = aiChatService.deleteSession(sessionId);
             return success ? success("删除成功") : error("删除失败");
@@ -117,7 +117,7 @@ public class AiChatController extends BaseController {
      */
     @Log(title = "AI聊天", businessType = BusinessType.UPDATE)
     @PostMapping("/sessions/{sessionId}/clear")
-    public AjaxResult clearSessionHistory(@PathVariable String sessionId) {
+    public AjaxResult clearSessionHistory(@PathVariable Long sessionId) {
         try {
             boolean success = aiChatService.clearSessionHistory(sessionId);
             return success ? success("清空成功") : error("清空失败");

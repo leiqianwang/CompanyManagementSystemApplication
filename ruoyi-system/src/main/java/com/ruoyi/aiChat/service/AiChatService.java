@@ -3,12 +3,14 @@ package com.ruoyi.aiChat.service;
 import com.ruoyi.aiChat.dto.ChatMessageRequest;
 import com.ruoyi.aiChat.dto.ChatMessageResponse;
 import com.ruoyi.aiChat.dto.ChatSessionDto;
+import com.ruoyi.ai.domain.AiModelResource;
 import com.ruoyi.aiChat.config.AiChatConfig;
 import com.ruoyi.aiChat.domain.AiChatMessage;
 import com.ruoyi.aiChat.domain.ChatSessionEntity;
 import com.ruoyi.aiChat.domain.MessageRole;
 import com.ruoyi.aiChat.repository.AiChatMessageRepository;
 import com.ruoyi.aiChat.repository.AiChatSessionRepository;
+import com.ruoyi.ai.service.IAiModelResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,18 +38,87 @@ public class AiChatService {
     @Autowired
     private AiChatMessageRepository aiChatMessageRepository;
 
+    @Autowired
+    private IAiModelResourceService aiModelResourceService;
+
+    @Autowired
+    private AiChatConfig aiChatConfig;
+
+    /**
+     * 更新会话信息和保存响应
+     */
+    private void updateMessage(ChatSessionEntity session, Long sessionId, String aiResponse) {
+        List<AiChatMessage> allMessages = aiChatMessageRepository.findBySessionId(sessionId);
+        session.setLastActivity(LocalDateTime.now());
+        session.setMessageCount(allMessages.size());
+        session.setLastMessageContent(aiResponse.length() > 50 ?
+                aiResponse.substring(0, 50) + "..." : aiResponse);
+        aiChatSessionRepository.save(session);
+    }
+
+    /**
+     * 获取或创建会话
+     */
+    private ChatSessionEntity getOrCreateSession(Long sessionId, String title) {
+        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
+        if (session == null) {
+            session = new ChatSessionEntity();
+            session.setSessionId(sessionId);
+            session.setTitle(title);
+            session.setCreatedAt(LocalDateTime.now());
+            session.setLastActivity(LocalDateTime.now());
+            session.setLastMessageContent("");
+            session.setMessageCount(0);
+            session.setIsActive(true);
+            session = aiChatSessionRepository.save(session);
+        } else {
+            // 更新最后活动时间
+            session.setLastActivity(LocalDateTime.now());
+            session = aiChatSessionRepository.save(session);
+        }
+        return session;
+    }
+
     /**
      * 发送聊天消息 - 使用数据库持久化
      */
     public ChatMessageResponse sendMessage(ChatMessageRequest request) {
         try {
-            String sessionId = request.getSessionId();
-            if (sessionId == null || sessionId.trim().isEmpty()) {
-                sessionId = generateSessionId();
+            Long sessionId = request.getSessionId();
+            if (sessionId == null) {
+                sessionId = generateSessionId(); // 修复：如果sessionId为null，生成新的sessionId
             }
 
             // 获取或创建会话
-            ChatSessionEntity session = getOrCreateSession(sessionId, "新对话");
+            ChatSessionEntity session = getOrCreateSession(sessionId, "新对��");
+
+            // 简化的模型调用逻辑 - 直接使用modelId
+            String aiResponse;
+            String modelName = "default";
+            Integer tokenUsage = null;
+
+            if (request.getModelId() != null && !request.getModelId().isEmpty()) {
+                try {
+                    Long modelId = Long.parseLong(request.getModelId());
+                    // 使用新的基于modelId的方法
+                    aiResponse = callAiServiceByModelId(modelId, request.getMessage());
+
+                    // 获取模型名称用于响应
+                    AiModelResource modelResource = aiModelResourceService.selectAiModelResourceById(modelId);
+                    if (modelResource != null) {
+                        modelName = modelResource.getResourceName();
+                    }
+
+                    // 计算token使用量
+                    tokenUsage = calculateTokenUsage(request.getMessage(), aiResponse);
+                } catch (NumberFormatException e) {
+                    System.err.println("无效的模型ID: " + request.getModelId() + ", 使用默认模型");
+                    aiResponse = aiChatAssistant.chat(request.getMessage());
+                }
+            } else {
+                // 使用默认AI助手
+                aiResponse = aiChatAssistant.chat(request.getMessage());
+            }
 
             // 保存用户消息到数据库
             AiChatMessage userMessage = new AiChatMessage();
@@ -57,9 +128,6 @@ public class AiChatService {
             userMessage.setTimestamp(LocalDateTime.now());
             aiChatHistoryService.saveChatMessage(userMessage);
 
-            // 使用AI助手生成回复
-            String aiResponse = aiChatAssistant.chat(request.getMessage());
-
             // 保存AI回复到数据库
             AiChatMessage aiMessage = new AiChatMessage();
             aiMessage.setSessionId(sessionId);
@@ -68,13 +136,8 @@ public class AiChatService {
             aiMessage.setTimestamp(LocalDateTime.now());
             aiChatHistoryService.saveChatMessage(aiMessage);
 
-            // 更新会话信息
-            List<AiChatMessage> allMessages = aiChatMessageRepository.findBySessionId(sessionId);
-            session.setLastActivity(LocalDateTime.now());
-            session.setMessageCount(allMessages.size());
-            session.setLastMessageContent(aiResponse.length() > 50 ?
-                aiResponse.substring(0, 50) + "..." : aiResponse);
-            aiChatSessionRepository.save(session);
+            // 调用新方法更新会话信息
+            updateMessage(session, sessionId, aiResponse);
 
             // 构建响应
             ChatMessageResponse response = new ChatMessageResponse();
@@ -84,6 +147,8 @@ public class AiChatService {
             response.setMessageType("assistant");
             response.setCreateTime(LocalDateTime.now());
             response.setFinished(true);
+            response.setModel(modelName);
+            response.setTokenUsage(tokenUsage);
 
             return response;
 
@@ -100,7 +165,114 @@ public class AiChatService {
     }
 
     /**
-     * 获取会���列表 - 从数据库查询
+     * 根据模型ID调用相应的AI服务
+     * @param modelId 模型ID
+     * @param message 用户消息
+     * @return AI回复
+     */
+    private String callAiServiceByModelId(Long modelId, String message) {
+        try {
+            // 根据modelId获取模型资源
+            AiModelResource modelResource = aiModelResourceService.selectAiModelResourceById(modelId);
+
+            if (modelResource == null) {
+                System.err.println("模型ID " + modelId + " 不存在，使用默认模型");
+                return aiChatAssistant.chat(message);
+            }
+
+            // 调用现有的方法
+            return callAiServiceByModel(modelResource, message);
+
+        } catch (Exception e) {
+            System.err.println("根据模型ID " + modelId + " 调用AI服务失败: " + e.getMessage());
+            return aiChatAssistant.chat(message);
+        }
+    }
+
+    /**
+     * 根据模型配置调用相应的AI服务
+     * @param modelResource 模型资源配置
+     * @param message 用户消息
+     * @return AI回复
+     */
+    private String callAiServiceByModel(AiModelResource modelResource, String message) {
+        // 根据模型类型调用不同的AI服务
+        String modelType = modelResource.getResourceType();
+
+        try {
+            // 使用配置的模型类型创建对应的AI助手
+            AiChatConfig.AiChatAssistant assistant = aiChatConfig.createAiAssistantForModel(modelType);
+            return assistant.chat(message);
+        } catch (Exception e) {
+            // 如果指定模型失败，降级使用默认AI助手
+            System.err.println("模型 " + modelType + " 调用失败，使��默认模型: " + e.getMessage());
+            return aiChatAssistant.chat(message);
+        }
+    }
+
+    /**
+     * 计算token使用量
+     */
+    private Integer calculateTokenUsage(String userMessage, String aiResponse) {
+        // 这里实现token计算逻辑
+        // 可以使用tiktoken-java库或者其他token计算方法
+        int userTokens = userMessage.length() / 4; // 简单估算
+        int aiTokens = aiResponse.length() / 4; // 简单估算
+        return userTokens + aiTokens;
+    }
+
+    /**
+     * 生成会话ID
+     */
+    private Long generateSessionId() {
+        // 现在返回时间戳作为Long类型的sessionId
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * 创建新会话 - 保存到数据库
+     */
+    public ChatSessionDto createSession(String title, Long userId, String username) {
+        Long sessionId = generateSessionId();
+
+        ChatSessionEntity entity = new ChatSessionEntity();
+        entity.setSessionId(sessionId);
+        entity.setTitle(title);
+        entity.setUserId(userId != null ? userId.toString() : null);
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setLastActivity(LocalDateTime.now());
+        entity.setIsActive(true);
+        entity.setMessageCount(0);
+        entity.setLastMessageContent("");
+
+        ChatSessionEntity savedEntity = aiChatSessionRepository.save(entity);
+        return convertToDto(savedEntity);
+    }
+
+    /**
+     * 删除会话 - 从数据库删除
+     */
+    public boolean deleteSession(Long sessionId) {
+        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
+        if (session != null) {
+            // 删除会话的所有消息
+            aiChatHistoryService.deleteChatHistory(sessionId);
+            // 删除会话
+            aiChatSessionRepository.delete(session);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 清空会话历史 - 委托给AiChatHistoryService
+     */
+    public boolean clearSessionHistory(Long sessionId) {
+        return aiChatHistoryService.clearSessionHistory(sessionId);
+    }
+
+    /**
+     * 获取会话列表 - 从数据库查询
      */
     public List<ChatSessionDto> getSessions(Long userId) {
         List<ChatSessionEntity> sessionEntities = aiChatSessionRepository.findAll();
@@ -120,7 +292,7 @@ public class AiChatService {
     /**
      * 获取会话详情 - 从数据库查询
      */
-    public ChatSessionDto getSession(String sessionId) {
+    public ChatSessionDto getSession(Long sessionId) {
         ChatSessionEntity sessionEntity = aiChatSessionRepository.findBySessionId(sessionId);
         if (sessionEntity != null) {
             ChatSessionDto sessionDto = convertToDto(sessionEntity);
@@ -152,67 +324,6 @@ public class AiChatService {
     }
 
     /**
-     * 创建新会话 - 保存到数据库
-     */
-    public ChatSessionDto createSession(String title, Long userId, String username) {
-        String sessionId = generateSessionId();
-
-        ChatSessionEntity entity = new ChatSessionEntity();
-        entity.setSessionId(sessionId);
-        entity.setTitle(title);
-        entity.setUserId(userId != null ? userId.toString() : null);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setLastActivity(LocalDateTime.now());
-        entity.setIsActive(true);
-        entity.setMessageCount(0);
-        entity.setLastMessageContent("");
-
-        ChatSessionEntity savedEntity = aiChatSessionRepository.save(entity);
-        return convertToDto(savedEntity);
-    }
-
-    /**
-     * 删除会话 - 从数据库删除
-     */
-    public boolean deleteSession(String sessionId) {
-        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
-        if (session != null) {
-            // 删除会话的所有消息
-            aiChatHistoryService.deleteChatHistory(sessionId);
-            // 删除会话
-            aiChatSessionRepository.delete(session);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 清空会话历史 - 委托给AiChatHistoryService
-     */
-    public boolean clearSessionHistory(String sessionId) {
-        return aiChatHistoryService.clearSessionHistory(sessionId);
-    }
-
-    /**
-     * 获取或创建会话
-     */
-    private ChatSessionEntity getOrCreateSession(String sessionId, String title) {
-        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
-        if (session == null) {
-            session = new ChatSessionEntity();
-            session.setSessionId(Long.parseLong(sessionId));
-            session.setTitle(title);
-            session.setCreatedAt(LocalDateTime.now());
-            session.setLastActivity(LocalDateTime.now());
-            session.setIsActive(true);
-            session.setMessageCount(0);
-            session.setLastMessageContent("");
-            session = aiChatSessionRepository.saveAndFlush(session);
-        }
-        return session;
-    }
-
-    /**
      * 实体转DTO
      */
     private ChatSessionDto convertToDto(ChatSessionEntity entity) {
@@ -223,12 +334,5 @@ public class AiChatService {
         dto.setMessageCount(entity.getMessageCount());
         dto.setLastMessageContent(entity.getLastMessageContent());
         return dto;
-    }
-
-    /**
-     * 生成会话ID
-     */
-    private String generateSessionId() {
-        return "chat_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 }

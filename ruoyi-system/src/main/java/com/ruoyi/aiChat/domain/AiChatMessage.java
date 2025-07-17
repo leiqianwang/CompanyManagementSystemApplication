@@ -1,19 +1,13 @@
 package com.ruoyi.aiChat.domain;
 import java.time.LocalDateTime;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Enumerated;
-import javax.persistence.EnumType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 
 @Entity
 public class AiChatMessage {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private String sessionId;
+  private Long sessionId;
   private Long userId;
   private String username;
   private String content;
@@ -25,7 +19,7 @@ public class AiChatMessage {
   // 默认构造函数
   public AiChatMessage() {}
 
-  public AiChatMessage(Long id, String sessionId, Long userId, String username, String content, LocalDateTime timestamp, MessageRole role) {
+  public AiChatMessage(Long id, Long sessionId, Long userId, String username, String content, LocalDateTime timestamp, MessageRole role) {
     this.id = id;
     this.sessionId = sessionId;
     this.userId = userId;
@@ -35,6 +29,7 @@ public class AiChatMessage {
     this.role = role;
   }
 
+
   public Long getId() {
     return id;
   }
@@ -43,11 +38,11 @@ public class AiChatMessage {
     this.id = id;
   }
 
-  public String getSessionId() {
+  public Long getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(String sessionId) {
+  public void setSessionId(Long sessionId) {
     this.sessionId = sessionId;
   }
 
