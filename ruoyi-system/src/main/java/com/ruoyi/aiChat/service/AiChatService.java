@@ -200,14 +200,14 @@ public class AiChatService {
         ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
         if (session == null) {
             session = new ChatSessionEntity();
-            session.setSessionId(sessionId);
+            session.setSessionId(Long.parseLong(sessionId));
             session.setTitle(title);
             session.setCreatedAt(LocalDateTime.now());
             session.setLastActivity(LocalDateTime.now());
             session.setIsActive(true);
             session.setMessageCount(0);
             session.setLastMessageContent("");
-            session = aiChatSessionRepository.save(session);
+            session = aiChatSessionRepository.saveAndFlush(session);
         }
         return session;
     }

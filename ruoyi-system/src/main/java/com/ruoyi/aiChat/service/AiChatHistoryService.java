@@ -37,14 +37,14 @@ public class AiChatHistoryService {
             // 同步更新会话信息
             chatSessionEntity.setMessageCount(0);
             chatSessionEntity.setLastMessageContent("");
-            aiChatSessionRepository.save(chatSessionEntity);
+            aiChatSessionRepository.saveAndFlush(chatSessionEntity);
             return true; // 成功清除会话历史
         }
         return false; // 会话不存在，无法清除历史
     }
 
     public List<ChatMessage> getChatHistory(String sessionId) {
-        // 从数据库���取聊天历史记录
+        // 从数据库获取聊天历史记录
         List<AiChatMessage> dbMessages = aiChatMessageRepository.findBySessionId(sessionId);
         // 声明一个新ArrayList来存储转换后的消息
         List<ChatMessage> chatMessages = new ArrayList<>();
@@ -66,9 +66,9 @@ public class AiChatHistoryService {
         return chatMessages;
     }
 
-    public void saveChatMessage(AiChatMessage message) {
+    public AiChatMessage saveChatMessage(AiChatMessage message) {
         // 保存聊天消息到数据库
-        aiChatMessageRepository.save(message);
+        return aiChatMessageRepository.save(message);
     }
 
     public void deleteChatHistory(String sessionId) {

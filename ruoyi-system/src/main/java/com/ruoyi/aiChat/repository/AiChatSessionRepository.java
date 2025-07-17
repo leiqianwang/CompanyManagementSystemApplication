@@ -9,9 +9,14 @@ import java.util.List;
 @Repository
 public interface AiChatSessionRepository extends JpaRepository<ChatSessionEntity, Long> {
     /**
-     * 根据sessionId查找会话
+     * 根据sessionId查找会话 - 支持String类型参数
      */
     ChatSessionEntity findBySessionId(String sessionId);
+
+    /**
+     * 根据sessionId查找会话 - 支持Long类型参数
+     */
+    ChatSessionEntity findBySessionId(Long sessionId);
 
     /**
      * 根据用户ID查找会话

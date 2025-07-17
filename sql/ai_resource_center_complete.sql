@@ -4,7 +4,7 @@
 -- ================================================
 
 -- 切换到RuoYi系统数据库
--- USE ry; 
+-- USE ry;
 
 -- ================================================
 -- 1. 创建AI模型资源表
@@ -81,6 +81,10 @@ CREATE TABLE `embedding_model_resource` (
 INSERT INTO `ai_model_resource` (`resource_name`, `resource_type`, `default_model`, `api_key`, `secret_key`, `api_url`, `frequency_limit`, `active`, `operation`, `extra_key`, `create_by`, `remark`) VALUES
 ('OpenAI GPT-4', 'LLM', 'gpt-4', 'sk-test-key-123', NULL, 'https://api.openai.com/v1/chat/completions', 60, '0', '测试OpenAI GPT-4模型', '{"temperature": 0.7, "max_tokens": 1000}', 'admin', 'OpenAI GPT-4测试资源'),
 ('百度文心一言', 'LLM', 'ernie-bot', 'test-api-key', 'test-secret-key', 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', 100, '0', '测试百度文心一言', '{"temperature": 0.5}', 'admin', '百度文心一言测试资源');
+
+-- 添加Ollama模型
+INSERT INTO `ai_model_resource` (`resource_name`, `resource_type`, `default_model`, `api_key`, `api_url`, `active`) VALUES
+('Ollama LLaMA3.1 8B', 'Ollama', 'llama3.1:8b', 'ollama', 'http://localhost:11434/v1', '0');
 
 -- 嵌入模型资源测试数据
 INSERT INTO `embedding_model_resource` (`resource_name`, `resource_type`, `api_key`, `secret_key`, `api_url`, `dimension`, `frequency_limit`, `active`, `operation`, `create_by`, `remark`) VALUES
@@ -176,9 +180,9 @@ VALUES('嵌入模型删除', @embeddingModelMenuId, '4', '', '', 1, 0, 'F', '0',
 -- 7. 验证脚本 (可选执行)
 -- ================================================
 -- 查看AI资源中心菜单
--- SELECT menu_id, menu_name, parent_id, path, component, perms 
--- FROM sys_menu 
--- WHERE menu_name = 'AI资源中心' OR parent_id IN 
+-- SELECT menu_id, menu_name, parent_id, path, component, perms
+-- FROM sys_menu
+-- WHERE menu_name = 'AI资源中心' OR parent_id IN
 -- (SELECT menu_id FROM sys_menu WHERE menu_name = 'AI资源中心');
 
 -- 查看AI模型资源表数据
