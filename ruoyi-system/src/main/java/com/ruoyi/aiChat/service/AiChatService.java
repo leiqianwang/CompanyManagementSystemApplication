@@ -90,7 +90,7 @@ public class AiChatService {
             }
 
             // 获取或创建会话
-            ChatSessionEntity session = getOrCreateSession(sessionId, "新对��");
+            ChatSessionEntity session = getOrCreateSession(sessionId, "新对����");
 
             // 简化的模型调用逻辑 - 直接使用modelId
             String aiResponse;
@@ -109,7 +109,7 @@ public class AiChatService {
                         modelName = modelResource.getResourceName();
                     }
 
-                    // 计算token使用量
+                    // 计算token使用���
                     tokenUsage = calculateTokenUsage(request.getMessage(), aiResponse);
                 } catch (NumberFormatException e) {
                     System.err.println("无效的模型ID: " + request.getModelId() + ", 使用默认模型");
@@ -227,6 +227,82 @@ public class AiChatService {
     private Long generateSessionId() {
         // 现在返回时间戳作为Long类型的sessionId
         return System.currentTimeMillis();
+    }
+
+    /**
+     * 保存初始消息到会话
+     */
+    public void saveInitialMessage(Long sessionId, String messageContent, String username) {
+        // 保存用户的初始消息
+        AiChatMessage userMessage = new AiChatMessage();
+        userMessage.setSessionId(sessionId);
+        userMessage.setContent(messageContent);
+        userMessage.setRole(MessageRole.USER);
+        userMessage.setUsername(username);
+        userMessage.setTimestamp(LocalDateTime.now());
+        aiChatHistoryService.saveChatMessage(userMessage);
+
+        // 更新会话信息
+        updateSessionLastMessage(sessionId, messageContent);
+
+        // 更新消息计数
+        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
+        if (session != null) {
+            session.setMessageCount(session.getMessageCount() + 1);
+            aiChatSessionRepository.save(session);
+        }
+    }
+
+    /**
+     * 批量保存消息到会话
+     */
+    public void saveMessagesToSession(Long sessionId, List<ChatMessageResponse> messages, String username) {
+        for (ChatMessageResponse messageResponse : messages) {
+            AiChatMessage message = new AiChatMessage();
+            message.setSessionId(sessionId);
+            message.setContent(messageResponse.getContent());
+
+            // 根据messageType设置角色
+            if ("user".equals(messageResponse.getMessageType())) {
+                message.setRole(MessageRole.USER);
+                message.setUsername(username);
+            } else if ("assistant".equals(messageResponse.getMessageType())) {
+                message.setRole(MessageRole.AI);
+            } else {
+                message.setRole(MessageRole.SYSTEM);
+            }
+
+            message.setTimestamp(messageResponse.getCreateTime() != null ?
+                    messageResponse.getCreateTime() : LocalDateTime.now());
+
+            aiChatHistoryService.saveChatMessage(message);
+        }
+
+        // 更新会话信息
+        if (!messages.isEmpty()) {
+            ChatMessageResponse lastMessage = messages.get(messages.size() - 1);
+            updateSessionLastMessage(sessionId, lastMessage.getContent());
+
+            // 更新消息计数
+            ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
+            if (session != null) {
+                session.setMessageCount(session.getMessageCount() + messages.size());
+                aiChatSessionRepository.save(session);
+            }
+        }
+    }
+
+    /**
+     * 更新会话的最后消息内容
+     */
+    public void updateSessionLastMessage(Long sessionId, String messageContent) {
+        ChatSessionEntity session = aiChatSessionRepository.findBySessionId(sessionId);
+        if (session != null) {
+            session.setLastMessageContent(messageContent.length() > 50 ?
+                messageContent.substring(0, 50) + "..." : messageContent);
+            session.setLastActivity(LocalDateTime.now());
+            aiChatSessionRepository.save(session);
+        }
     }
 
     /**

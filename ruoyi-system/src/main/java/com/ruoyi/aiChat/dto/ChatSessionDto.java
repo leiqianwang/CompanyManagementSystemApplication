@@ -44,6 +44,9 @@ public class ChatSessionDto {
     /** 消息列表 */
     private List<ChatMessageResponse> messages;
 
+    /** 创建会话时的初始消息内容（可选） */
+    private String initialMessage;
+
     public ChatSessionDto() {
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
@@ -134,6 +137,14 @@ public class ChatSessionDto {
 
     public void setMessages(List<ChatMessageResponse> messages) {
         this.messages = messages;
+    }
+
+    public String getInitialMessage() {
+        return initialMessage;
+    }
+
+    public void setInitialMessage(String initialMessage) {
+        this.initialMessage = initialMessage;
     }
 
     @Override

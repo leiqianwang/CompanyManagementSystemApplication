@@ -28,7 +28,7 @@ public class AiChatController extends BaseController {
     private AiChatService aiChatService;
 
     /**
-     * 发送聊天消息
+     * 发送聊天消��
      */
     @Log(title = "AI聊天", businessType = BusinessType.OTHER)
     @PostMapping("/send")
@@ -89,7 +89,38 @@ public class AiChatController extends BaseController {
                 title = "新对话";
             }
 
+            // 创建会话
             ChatSessionDto session = aiChatService.createSession(title, userId, username);
+
+            // 如果有初始消息内容，创建并保存消息记录
+            if (sessionDto.getInitialMessage() != null && !sessionDto.getInitialMessage().trim().isEmpty()) {
+                // 调用 aiChatService 保存初始消息
+                aiChatService.saveInitialMessage(session.getSessionId(), sessionDto.getInitialMessage(), username);
+
+                // 更新会话的最后消息内容
+                session.setLastMessageContent(sessionDto.getInitialMessage().length() > 50 ?
+                    sessionDto.getInitialMessage().substring(0, 50) + "..." : sessionDto.getInitialMessage());
+            }
+
+            // 如果有提供的 lastMessageContent，也要保存
+            else if (sessionDto.getLastMessageContent() != null && !sessionDto.getLastMessageContent().trim().isEmpty()) {
+                // 保存 lastMessageContent 作为初始消息
+                aiChatService.saveInitialMessage(session.getSessionId(), sessionDto.getLastMessageContent(), username);
+
+                session.setLastMessageContent(sessionDto.getLastMessageContent().length() > 50 ?
+                    sessionDto.getLastMessageContent().substring(0, 50) + "..." : sessionDto.getLastMessageContent());
+            }
+
+            // 如果提供了完整的消息数组，批量保存
+            if (sessionDto.getMessages() != null && !sessionDto.getMessages().isEmpty()) {
+                aiChatService.saveMessagesToSession(session.getSessionId(), sessionDto.getMessages(), username);
+
+                // 设置最后一条消息作为预览
+                ChatMessageResponse lastMessage = sessionDto.getMessages().get(sessionDto.getMessages().size() - 1);
+                session.setLastMessageContent(lastMessage.getContent().length() > 50 ?
+                    lastMessage.getContent().substring(0, 50) + "..." : lastMessage.getContent());
+            }
+
             return success(session);
         } catch (Exception e) {
             logger.error("创建会话失败", e);
