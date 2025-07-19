@@ -82,9 +82,7 @@ public class AiChatController extends BaseController {
     public AjaxResult createSession(@RequestBody ChatSessionDto sessionDto) {
         try {
             Long userId = SecurityUtils.getUserId();
-           String username = SecurityUtils.getUsername();
-//            Long userId = sessionDto.getUserId();
-//            String username = sessionDto.getUsername();
+            String username = SecurityUtils.getUsername();
             String title = sessionDto.getTitle();
             if (title == null || title.trim().isEmpty()) {
                 title = "新对话";
@@ -97,32 +95,37 @@ public class AiChatController extends BaseController {
             if (sessionDto.getInitialMessage() != null && !sessionDto.getInitialMessage().trim().isEmpty()) {
                 // 调用 aiChatService 保存初始消息
                 aiChatService.saveInitialMessage(session.getSessionId(), sessionDto.getInitialMessage(), username);
-
-                // 更新会话的最后消息内容
-                session.setLastMessageContent(sessionDto.getInitialMessage().length() > 50 ?
-                    sessionDto.getInitialMessage().substring(0, 50) + "..." : sessionDto.getInitialMessage());
             }
 
             // 如果有提供的 lastMessageContent，也要保存
             else if (sessionDto.getLastMessageContent() != null && !sessionDto.getLastMessageContent().trim().isEmpty()) {
                 // 保存 lastMessageContent 作为初始消息
                 aiChatService.saveInitialMessage(session.getSessionId(), sessionDto.getLastMessageContent(), username);
-
-                session.setLastMessageContent(sessionDto.getLastMessageContent().length() > 50 ?
-                    sessionDto.getLastMessageContent().substring(0, 50) + "..." : sessionDto.getLastMessageContent());
             }
 
             // 如果提供了完整的消息数组，批量保存
             if (sessionDto.getMessages() != null && !sessionDto.getMessages().isEmpty()) {
                 aiChatService.saveMessagesToSession(session.getSessionId(), sessionDto.getMessages(), username);
-
-                // 设置最后一条消息作为预览
-                ChatMessageResponse lastMessage = sessionDto.getMessages().get(sessionDto.getMessages().size() - 1);
-                session.setLastMessageContent(lastMessage.getContent().length() > 50 ?
-                    lastMessage.getContent().substring(0, 50) + "..." : lastMessage.getContent());
             }
 
-            return success(session);
+            // 重新获取最新的会话数据，包含正确的 messageCount 和 messages
+          //If input json payload to test entire chatSession object payload, instance for "messages",
+          // it will gives properties of "content", "messageType" and "createTime"
+
+          //{
+          //    "title": "How do you evaluate yourself as an AI assistant tool?",
+          //    "initialMessage": "How do you evaluate yourself as an AI assistant tool?",
+          //    "messages": [
+          //        {
+          //            "content": "How do you evaluate yourself as an AI assistant tool?",
+          //            "messageType": "user",
+          //            "createTime": "2025-07-19T16:37:41"
+          //        }
+          //    ]
+          //}
+            ChatSessionDto updatedSession = aiChatService.getSession(session.getSessionId());
+
+            return success(updatedSession != null ? updatedSession : session);
         } catch (Exception e) {
             logger.error("创建会话失败", e);
             return error("创建会话失败：" + e.getMessage());
