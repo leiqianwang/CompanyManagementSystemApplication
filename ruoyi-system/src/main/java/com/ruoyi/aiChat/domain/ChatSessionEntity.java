@@ -17,6 +17,18 @@ public class ChatSessionEntity {
 
     private Integer messageCount;
 
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+
+
+  public void setActive(Boolean active) {
+    isActive = active;
+  }
+
+  private String username;
+
     private String lastMessageContent;
 
     private LocalDateTime createdAt;
@@ -35,7 +47,12 @@ public class ChatSessionEntity {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public Integer getMessageCount() { return messageCount; }
+
+  public String getUsername() {
+      return username;
+  }
+
+  public Integer getMessageCount() { return messageCount; }
     public void setMessageCount(Integer messageCount) { this.messageCount = messageCount; }
 
     public String getLastMessageContent() { return lastMessageContent; }

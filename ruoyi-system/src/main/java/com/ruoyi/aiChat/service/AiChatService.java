@@ -314,6 +314,7 @@ public class AiChatService {
         ChatSessionEntity entity = new ChatSessionEntity();
         entity.setSessionId(sessionId);
         entity.setTitle(title);
+        entity.setUsername(username);
         entity.setUserId(userId != null ? userId.toString() : null);
         entity.setCreatedAt(LocalDateTime.now());
         entity.setLastActivity(LocalDateTime.now());
@@ -402,13 +403,14 @@ public class AiChatService {
     /**
      * 实体转DTO
      */
-    private ChatSessionDto convertToDto(ChatSessionEntity entity) {
-        ChatSessionDto dto = new ChatSessionDto(entity.getSessionId(), entity.getTitle());
-        dto.setUserId(entity.getUserId() != null ? Long.parseLong(entity.getUserId()) : null);
-        dto.setCreateTime(entity.getCreatedAt());
-        dto.setUpdateTime(entity.getLastActivity());
-        dto.setMessageCount(entity.getMessageCount());
-        dto.setLastMessageContent(entity.getLastMessageContent());
+    private ChatSessionDto convertToDto(ChatSessionEntity savedEntity) {
+        ChatSessionDto dto = new ChatSessionDto(savedEntity.getSessionId(), savedEntity.getTitle());
+        dto.setUserId(savedEntity.getUserId() != null ? Long.parseLong(savedEntity.getUserId()) : null);
+        dto.setUsername(savedEntity.getUsername());
+        dto.setCreateTime(savedEntity.getCreatedAt());
+        dto.setUpdateTime(savedEntity.getLastActivity());
+        dto.setMessageCount(savedEntity.getMessageCount());
+        dto.setLastMessageContent(savedEntity .getLastMessageContent());
         return dto;
     }
 }

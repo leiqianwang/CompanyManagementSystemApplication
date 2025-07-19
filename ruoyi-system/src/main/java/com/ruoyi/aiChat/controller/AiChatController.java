@@ -82,8 +82,9 @@ public class AiChatController extends BaseController {
     public AjaxResult createSession(@RequestBody ChatSessionDto sessionDto) {
         try {
             Long userId = SecurityUtils.getUserId();
-            String username = SecurityUtils.getUsername();
-
+           String username = SecurityUtils.getUsername();
+//            Long userId = sessionDto.getUserId();
+//            String username = sessionDto.getUsername();
             String title = sessionDto.getTitle();
             if (title == null || title.trim().isEmpty()) {
                 title = "新对话";

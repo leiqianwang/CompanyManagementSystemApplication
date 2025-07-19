@@ -36,6 +36,7 @@ CREATE TABLE ai_chat_session (
     session_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id VARCHAR(64) NOT NULL,
     title VARCHAR(128),
+    username VARCHAR(64),
     message_count INT DEFAULT 0,
     last_message_content VARCHAR(512),
     created_at DATETIME,
