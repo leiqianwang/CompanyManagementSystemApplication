@@ -18,6 +18,14 @@ export const chatApi = {
     })
   },
 
+  // 获取可用的AI模型列表
+  getAvailableModels() {
+    return request({
+      url: '/ai/modelResource/available',
+      method: 'get'
+    })
+  },
+
   // 发送聊天消息
   sendMessage(data) {
     return request({

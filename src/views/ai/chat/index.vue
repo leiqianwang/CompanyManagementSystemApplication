@@ -39,8 +39,34 @@
     <div class="chat-area">
       <!-- 聊天标题栏 -->
       <div class="chat-header">
-        <h3>{{ currentSession && currentSession.title ? currentSession.title : 'AI 聊天助手' }}</h3>
+        <div class="header-left">
+          <h3>{{ currentSession && currentSession.title ? currentSession.title : 'AI 聊天助手' }}</h3>
+          <div class="model-info" v-if="selectedModel">
+            <i class="el-icon-cpu"></i>
+            <span>{{ selectedModel.resourceName }}</span>
+          </div>
+        </div>
         <div class="chat-actions">
+          <!-- AI模型选择器 -->
+          <div class="model-selector">
+            <el-select
+              v-model="selectedModelId"
+              placeholder="选择AI模型"
+              size="small"
+              @change="onModelChange"
+              style="width: 200px; margin-right: 10px;"
+            >
+              <el-option
+                v-for="model in availableModels"
+                :key="model.id"
+                :label="model.resourceName"
+                :value="model.id"
+              >
+                <span style="float: left">{{ model.resourceName }}</span>
+                <span style="float: right; color: #8492a6; font-size: 13px">{{ model.resourceType }}</span>
+              </el-option>
+            </el-select>
+          </div>
           <el-button
             type="text"
             size="small"
@@ -58,7 +84,20 @@
           <div class="welcome-icon">🤖</div>
           <h3>欢迎使用 AI 聊天助手</h3>
           <p>我是您的智能助手，可以帮助您解答问题、提供建议或进行对话交流。</p>
-          <p>请在下方输入您的问题开始对话吧！</p>
+          <p>请选择一个AI模型，然后在下方输入您的问题开始对话吧！</p>
+          
+          <!-- 模型信息卡片 -->
+          <div v-if="selectedModel" class="model-card">
+            <div class="model-card-header">
+              <i class="el-icon-cpu"></i>
+              <span>当前模型: {{ selectedModel.resourceName }}</span>
+            </div>
+            <div class="model-card-body">
+              <p><strong>类型:</strong> {{ selectedModel.resourceType }}</p>
+              <p><strong>默认模型:</strong> {{ selectedModel.defaultModel }}</p>
+              <p v-if="selectedModel.remark"><strong>说明:</strong> {{ selectedModel.remark }}</p>
+            </div>
+          </div>
         </div>
 
         <div
@@ -77,7 +116,11 @@
           
           <div class="message-content">
             <div class="message-text" v-html="formatMessage(message.content)"></div>
-            <div class="message-time">{{ formatTime(message.createTime) }}</div>
+            <div class="message-meta">
+              <span class="message-time">{{ formatTime(message.createTime) }}</span>
+              <span v-if="message.model" class="message-model">{{ message.model }}</span>
+              <span v-if="message.tokenUsage" class="token-usage">{{ message.tokenUsage }} tokens</span>
+            </div>
             <div v-if="message.error" class="message-error">
               错误: {{ message.error }}
             </div>
@@ -97,6 +140,7 @@
               <span></span>
               <span></span>
             </div>
+            <div class="typing-text">{{ selectedModel ? selectedModel.resourceName : 'AI' }} 正在思考中...</div>
           </div>
         </div>
       </div>
@@ -115,12 +159,18 @@
             class="message-input"
           />
           <div class="input-actions">
-            <span class="input-tip">按 Enter 换行，Ctrl+Enter 发送</span>
+            <div class="input-info">
+              <span class="input-tip">按 Enter 换行，Ctrl+Enter 发送</span>
+              <span v-if="selectedModel" class="model-badge">
+                <i class="el-icon-cpu"></i>
+                {{ selectedModel.resourceName }}
+              </span>
+            </div>
             <el-button
               type="primary"
               :loading="isTyping"
               @click="handleSend"
-              :disabled="!inputMessage.trim() || isTyping"
+              :disabled="!inputMessage.trim() || isTyping || !selectedModelId"
               class="send-btn"
             >
               <i class="el-icon-position"></i>
@@ -146,6 +196,11 @@ export default {
       currentSession: null,
       currentMessages: [],
       
+      // 模型相关
+      availableModels: [],
+      selectedModelId: null,
+      selectedModel: null,
+      
       // 输入相关
       inputMessage: '',
       isTyping: false,
@@ -156,6 +211,7 @@ export default {
   },
   
   mounted() {
+    this.loadAvailableModels()
     this.testApiConnection()
     this.loadSessions()
     this.createNewSession()
@@ -178,6 +234,29 @@ export default {
         console.error('❌ AI Chat API 连接失败:', error)
         this.$modal.msgError('AI聊天服务连接失败，请检查后端服务是否正常运行')
       }
+    },
+
+    // ===== 模型管理 =====
+    
+    async loadAvailableModels() {
+      try {
+        const response = await chatApi.getAvailableModels()
+        this.availableModels = response.data || []
+        
+        // 默认选择第一个可用模型
+        if (this.availableModels.length > 0 && !this.selectedModelId) {
+          this.selectedModelId = this.availableModels[0].id
+          this.selectedModel = this.availableModels[0]
+        }
+      } catch (error) {
+        console.error('加载AI模型列表失败:', error)
+        this.$modal.msgError('加载AI模型列表失败')
+      }
+    },
+    
+    onModelChange(modelId) {
+      this.selectedModel = this.availableModels.find(model => model.id === modelId)
+      console.log('切换AI模型:', this.selectedModel)
     },
 
     // ===== 会话管理 =====
@@ -323,6 +402,7 @@ export default {
         const response = await chatApi.sendMessage({
           sessionId: this.currentSessionId,
           message: message,
+          modelId: this.selectedModelId, // 使用选中的模型ID
           userId: this.$store.state.user ? this.$store.state.user.id : 1,
           username: this.$store.state.user ? this.$store.state.user.name : 'admin'
         })
@@ -508,9 +588,36 @@ export default {
   align-items: center;
   background: #fff;
 
-  h3 {
-    margin: 0;
-    color: #333;
+  .header-left {
+    display: flex;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    .model-info {
+      display: flex;
+      align-items: center;
+      margin-left: 15px;
+      font-size: 14px;
+      color: #666;
+
+      .el-icon-cpu {
+        margin-right: 5px;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .chat-actions {
+    display: flex;
+    align-items: center;
+
+    .model-selector {
+      margin-right: 15px;
+    }
   }
 }
 
@@ -539,6 +646,37 @@ export default {
   p {
     margin-bottom: 8px;
     line-height: 1.6;
+  }
+
+  .model-card {
+    margin-top: 20px;
+    background: #f0f9eb;
+    border: 1px solid #e1f3d8;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .model-card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      color: #67c23a;
+
+      .el-icon-cpu {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+
+    .model-card-body {
+      font-size: 13px;
+      color: #909399;
+      line-height: 1.6;
+
+      p {
+        margin-bottom: 5px;
+      }
+    }
   }
 }
 
@@ -609,11 +747,36 @@ export default {
       word-wrap: break-word;
     }
 
-    .message-time {
+    .message-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
       font-size: 11px;
       color: #999;
-      margin-top: 4px;
-      text-align: center;
+    }
+
+    .message-time {
+      // font-size: 11px;
+      // color: #999;
+      // margin-top: 4px;
+      // text-align: center;
+    }
+
+    .message-model {
+      background: #e6f7ff;
+      color: #1890ff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .token-usage {
+      background: #fffbe6;
+      color: #faad14;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
     }
 
     .message-error {
@@ -631,6 +794,7 @@ export default {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     display: flex;
     gap: 4px;
+    margin-bottom: 5px;
 
     span {
       width: 8px;
@@ -642,6 +806,12 @@ export default {
       &:nth-child(1) { animation-delay: -0.32s; }
       &:nth-child(2) { animation-delay: -0.16s; }
     }
+  }
+  
+  &.typing .typing-text {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
   }
 }
 
@@ -686,9 +856,30 @@ export default {
       background: #f8f9fa;
       border-top: 1px solid #e4e7ed;
 
-      .input-tip {
+      .input-info {
+        display: flex;
+        align-items: center;
         font-size: 12px;
         color: #999;
+
+        .input-tip {
+          margin-right: 10px;
+        }
+
+        .model-badge {
+          background: #e6f7ff;
+          color: #1890ff;
+          padding: 2px 8px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          font-size: 12px;
+
+          .el-icon-cpu {
+            margin-right: 4px;
+            font-size: 14px;
+          }
+        }
       }
 
       .send-btn {
