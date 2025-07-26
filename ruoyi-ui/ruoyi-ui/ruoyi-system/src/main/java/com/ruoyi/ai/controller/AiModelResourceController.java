@@ -103,6 +103,18 @@ public class AiModelResourceController extends BaseController
     }
 
     /**
+     * 获取启用的AI模型资源列表（无需权限，供聊天界面使用）
+     */
+    @GetMapping("/available")
+    public AjaxResult getAvailableModels()
+    {
+        AiModelResource queryParam = new AiModelResource();
+        queryParam.setActive("0"); // 只查询启用的模型
+        List<AiModelResource> list = aiModelResourceService.selectAiModelResourceList(queryParam);
+        return success(list);
+    }
+
+    /**
      * 测试AI模型资源连接
      */
     @PreAuthorize("@ss.hasPermi('ai:modelResource:test')")
